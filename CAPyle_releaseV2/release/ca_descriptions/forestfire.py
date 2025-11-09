@@ -38,7 +38,6 @@ def transition_func(grid, neighbourstates, neighbourcounts):
     # convert dictionary to NumPy array for vectorized lookup
     # assumes states 0–4 exist
     flammable_arr = np.array([flammable[i] for i in range(max(flammable.keys()) + 1)])
-
     
     # copy grid to update in place (like Game of Life)
     new_grid = grid.copy()
