@@ -9,9 +9,10 @@ docker build -t com3524 .
 # 3. Run your app with display forwarding
 docker run -it \
     -p 5000:5000 \
-    -e DISPLAY=host.docker.internal:0 \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
     com3524 \
-    python3 run_tool.py
+    bash
 #
 #  Created by Ayesha Sana on 21/08/2025.
 #  

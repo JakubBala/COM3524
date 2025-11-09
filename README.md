@@ -42,6 +42,9 @@ cd COM3524
 ```
 ---
 
+>[!NOTE]
+>Before running the tools make sure that you have the latest update of this repository by typing **git pull**.
+
 ## Platform-Specific Notes
 ---
 
@@ -50,7 +53,7 @@ cd COM3524
 ### 1. **Install Required Software**
 - Install Docker Desktop and VcXsrv as mentioned [above](#Prerequisites)
 
-### 2. Run Docker and X Server in the background
+### 2.1. Run Docker and X Server in the background
 After installing VcXsrv software, run the server (Xlaunch)
 Set the default display settings as follow:
   - Multiple windows mode
@@ -71,13 +74,22 @@ Set the default display settings as follow:
 
 - This confirms that the X server is running in the background.
 
+### 2.2. Edit the script to add your local path
+Next, open the script (linux.sh, mac.sh or windows.bat) which you will be running based on your operating system and replace this line **/Users/ayesha/Desktop/COM3524** with the full path on your own local directory where you have cloned this repository.
+
 ### 3. Run the script
 Once you have made sure that the previous steps are done, you are ready to run the script:
 
 ```bash
-.\windows_updated.bat
+.\windows.bat
 ```
+After running the script, a shell **root@com3524:/src#** opens inside the container.
+Inside that shell, start the tools menu with: 
 
+```bash
+python run_tool.py 
+```
+---
 >[!NOTE]
 >Make sure that docker is running in the background 
 
@@ -141,9 +153,25 @@ conda deactivate
 ```bash
 ./mac.sh 
 ```
+
+After running the script, a shell **root@com3524:/src#** opens inside the container.
+Inside that shell, start the tools menu with: 
+
+```bash
+python run_tool.py 
+```
 ---
 
----
+Once you run the command, the following menu should appear, allowing you to select which tool to launch.
+
+<div style="display: flex; align-items: flex-start; gap: 1rem;">
+
+  <img src="https://github.com/user-attachments/assets/62b99fdb-c21e-4d47-add8-1b6166f2dda6" alt="Tools Menu Screenshot" width="500" style="border-radius: 8px;">
+</div>
+
+  - The menu allows you to select from available tools.
+  - Use the number keys (1–3) to choose the desired tool.  
+  - Once selected, the corresponding interface (GUI or web) will open. 
 
 ##  Troubleshooting
 
@@ -154,18 +182,43 @@ conda deactivate
 - **Permission denied**
   - Ensure user is added to Docker group, or run using `sudo`
 
----
-
-
-
----
-
-## Troubleshooting
-
 - Ensure you’re using **Python 3.8 or higher**.
 - For permission errors on Linux/macOS, try using `sudo` if needed.
 - On Windows, run the command prompt or PowerShell as Administrator if access is denied.
 
 ---
+
+
+## Editing code in VS Code
+- Open VS Code
+- Click the bottom left double arrows icon
+- Select **Attach to Running Container**
+- Choose the container named **com3524**
+- Next open folder named /src and now it should show all your files within the container you can eaily edit
+
+>[!NOTE]
+>Make sure that your container is running and you are in the interactive shell
+
+
+## Stopping the container
+- Once you are done using the tools, type
+```bash
+exit 
+```
+inside the container shell
+
+- To remove container completely, run:
+```bash
+docker rm com3524 
+```
+
+## Running tools outside Docker environment
+- If you encounter issues running the tools in the Docker environment, you can follow these instructions to run them directly.
+
+- Navigate to the cloned repository using `cd` and run the following command 
+```bash
+python run_tool.py
+```
+
 ## Author
 Ayesha Sana, Department of Computer Science  

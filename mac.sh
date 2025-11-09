@@ -8,10 +8,13 @@ docker build -t com3524 .
 
 # 3. Run your app with display forwarding
 docker run -it \
-    -p 5000:5000 \
+    -p 5001:5000 \
     -e DISPLAY=host.docker.internal:0 \
+    -v "$(pwd)":/src \
+    --name com3524 \
+    --hostname com3524 \
     com3524 \
-    python3 run_tool.py
+    bash
 #
 #  Created by Ayesha Sana on 21/08/2025.
 #  

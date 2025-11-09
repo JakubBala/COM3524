@@ -1,7 +1,8 @@
 #!/bin/sh
 
 #  com3524.sh
-xhost +127.0.0.1
+#xhost +127.0.0.1
+xhost +local:docker
 
 # 2. Build the image (rebuild every time if needed)
 docker build -t com3524 .
