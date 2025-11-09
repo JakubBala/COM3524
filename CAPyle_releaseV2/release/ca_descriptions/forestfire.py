@@ -16,6 +16,23 @@ from capyle.ca import Grid2D, Neighbourhood, CAConfig, randomise2d
 import capyle.utils as utils
 import numpy as np
 
+states = (0, 1, 2, 3, 4,
+        10, 11, 12, 13, 14,
+        20, 21, 22, 23, 24)
+
+col_chaparral = (0.98, 0.79, 0)
+col_denseforest = (0.06, 0.37, 0.02)
+col_lake = (0.207, 0.86, 0.98)
+col_canyon = (0.98, 0.98, 0)
+col_firesource = (0,0,0)
+col_onfire = (1,0,0)
+col_charred = (0.62, 0.56, 0.56)
+
+
+state_colours = [col_chaparral, col_denseforest, col_lake, col_canyon, col_firesource,
+                col_onfire, col_onfire, col_onfire, col_onfire, col_onfire, 
+                col_charred, col_charred, col_charred, col_charred, col_charred]
+
 
 def transition_func(grid, neighbourstates, neighbourcounts):
 
@@ -35,35 +52,34 @@ def transition_func(grid, neighbourstates, neighbourcounts):
         4: True    # fire source (can also ignite if not already)
     }
 
-    # convert dictionary to NumPy array for vectorized lookup
-    # assumes states 0–4 exist
-    flammable_arr = np.array([flammable[i] for i in range(max(flammable.keys()) + 1)])
+    state_idx = {s: i for i, s in enumerate(states)}
     
-    # copy grid to update in place (like Game of Life)
-    new_grid = grid.copy()
+    # --- Identify neighbours that are burning ---
+    # Burning states are 10–19
+    burning_neighbour_total = np.zeros_like(grid, dtype=int)
+    for s in range(10, 15):
+        burning_neighbour_total += neighbourcounts[state_idx[s]].astype(int)
 
-    # Identify neighbours that are on fire
-    on_fire_neighbour = ((neighbourstates >= 10) & (neighbourstates < 20)).any(axis=0)
-
-    # extract base terrain (0–4)
+    # --- Extract base terrain ---
     base = (grid % 10).astype(int)
 
-    # --- RULE 1: Cells that ignite ---
-    # cells that are below 10 are not burning/burned yet
-    can_burn = (grid < 10) & flammable_arr[base]
+    # --- Flammability mask ---
+    flammable_mask = np.vectorize(lambda b: flammable[b])(base)
 
-    # cells that ignite if at least one neighbour is on fire
-    ignite = can_burn & on_fire_neighbour
+    # --- Rule 1: Burning cells stay burning ---
+    still_burning = (grid >= 10) & (grid < 20)
 
-    # mark those as on fire (+10)
-    new_grid[ignite] = base[ignite] + 10
+    # --- Rule 2: Flammable cells next to fire ignite ---
+    can_burn = (grid < 10) & flammable_mask
+    ignite = can_burn & (burning_neighbour_total > 0)
 
-    # --- RULE 2 (TEMP): Burning cells stay burning (no decay) ---
-    # no need to change burning cells; just ensure they remain burning
-    burning = (grid >= 10) & (grid < 20)
-    new_grid[burning] = grid[burning]
+    # --- Update grid in place ---
+    # Cells that ignite become burning
+    grid[ignite] = base[ignite] + 10
+    # Burning cells remain burning
+    grid[still_burning] = grid[still_burning]
 
-    return new_grid
+    return grid
 
 
 def setup(args):
@@ -72,22 +88,13 @@ def setup(args):
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
     config.title = "Conway's game of life"
     config.dimensions = 2
-    config.states = (0, 1, 2, 3, 4, 10, 11, 12, 13, 14, 20, 21, 22, 23, 24)
+    config.states = states
+    config.wrap = False
     # ------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    chaparral = (0.98, 0.79, 0)
-    denseforest = (0.06, 0.37, 0.02)
-    lake = (0.207, 0.86, 0.98)
-    canyon = (0.98, 0.98, 0)
-    firesource = (0,0,0)
-    onfire = (1,0,0)
-    charred = (0.62, 0.56, 0.56)
-
-    config.state_colors = [chaparral, denseforest, lake, canyon, firesource,
-                        onfire, onfire, onfire, onfire, onfire, 
-                        charred, charred, charred, charred, charred]
+    config.state_colors = state_colours
     # config.num_generations = 150
     # config.grid_dims = (200,200)
 
