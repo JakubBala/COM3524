@@ -39,12 +39,12 @@ def setup(args):
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
     config.title = "Conway's game of life"
     config.dimensions = 2
-    config.states = (0, 1)
+    config.states = (0, 1, 2)
     # ------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    # config.state_colors = [(0,0,0),(1,1,1)]
+    config.state_colors = [(0,0,0),(1,1,1),(0,1,0)]
     # config.num_generations = 150
     # config.grid_dims = (200,200)
 

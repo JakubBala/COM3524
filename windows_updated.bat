@@ -5,7 +5,7 @@ REM ============================
 
 REM ---- CONFIG ----
 set IMAGE_NAME=com3524
-set DISPLAY=localhost:-1.0
+set DISPLAY=host.docker.internal:0.0
 
 REM ---- BUILD IMAGE ----
 echo Building Docker image...
