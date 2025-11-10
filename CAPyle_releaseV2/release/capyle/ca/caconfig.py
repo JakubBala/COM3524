@@ -12,12 +12,14 @@ class CAConfig(object):
         # parse the file for the best guess of the dimensions and name
         self.title, self.dimensions = get_metadata(filepath)
         self.states = None
+        self.state_index_function = None
         self.grid_dims = None
         self.rule_num = None
         self.state_colors = None
         self.num_generations = None
         self.nhood_arr = None
         self.initial_grid = None
+        self.dtype = None
         # default wrapping behaviour is True
         self.wrap = True
         self.default_paths()

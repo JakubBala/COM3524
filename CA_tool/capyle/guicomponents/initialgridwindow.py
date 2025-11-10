@@ -90,7 +90,8 @@ class _EditInitialGridWindow(tk.Toplevel):
         else:
             self.grid = grid
         self.ca_config.set_initial_grid(grid)
-        self.graph.setdata(grid)
+        numeric_grid = np.vectorize(self.ca_config.state_index_function)(grid)
+        self.graph.setdata(numeric_grid)
         self.graph.refresh()
         if close:
             self.close()
