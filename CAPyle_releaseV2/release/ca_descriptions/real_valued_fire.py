@@ -3,10 +3,12 @@
 
 # --- Set up executable path, do not edit ---
 import copy
+import math
 import numbers
 import random
 import sys
 import inspect
+from functools import partial
 
 this_file_loc = (inspect.stack()[0][1])
 main_dir_loc = this_file_loc[:this_file_loc.index('ca_descriptions')]
@@ -21,11 +23,22 @@ from capyle.ca import Grid2D, Neighbourhood, CAConfig, randomise2d
 import capyle.utils as utils
 import numpy as np
 from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
+from CA_tool.capyle.wind import Wind
 
-def transition_func(grid, neighbourstates, neighbourcounts):
+def transition_func(
+    grid, 
+    neighbour_states, 
+    neighbour_counts, 
+    wind_distribution: Wind, 
+    water_dropping_plan=None
+):
     rows, cols = grid.shape
 
     ignite_mask = np.zeros_like(grid, dtype=bool)
+
+    neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
+                    (-1,0),           (1,0),
+                    (-1,1),  (0,1),   (1,1)]
 
     for x in range(rows):
         for y in range(cols):
@@ -34,12 +47,22 @@ def transition_func(grid, neighbourstates, neighbourcounts):
             if cell.burning:
                 continue
 
-            for ns_array in neighbourstates:
+            for idx, ns_array in enumerate(neighbour_states):
                 if x < ns_array.shape[0] and y < ns_array.shape[1]:
                     neighbor = ns_array[x, y]
                     if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
-                        ignite_mask[x, y] = True
-                        break
+                        dx, dy = neighbor_offsets[idx]
+
+                        fire_dir = (math.degrees(math.atan2(dy, dx)) + 360) % 360
+
+                        wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
+
+                        prob = 0.05 + (1 - 0.05) * wind_prob
+                        prob = min(prob, 1.0)
+
+                        if random.random() < prob:
+                            ignite_mask[x, y] = True
+                            break 
 
     for x in range(rows):
         for y in range(cols):
@@ -54,7 +77,7 @@ def transition_func(grid, neighbourstates, neighbourcounts):
 
     return grid
 
-def setup(args):
+def setup(args, wind_direction):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
@@ -164,6 +187,8 @@ def setup(args):
     config.state_colors = state_colors
 
     config.wrap = False
+    config.num_generations = 100
+    config.timeline_path = f"wd_{wind_direction}_timeline"
 
     if len(args) == 2:
         config.save()
@@ -172,12 +197,14 @@ def setup(args):
     return config
 
 
-def main():
+def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
     # Open the config object
-    config = setup(sys.argv[1:])
+    config = setup(sys.argv[1:], direction)
+
+    wind = Wind(wind_speed, direction, k, c)
 
     # Create grid object
-    grid = Grid2D(config, transition_func)
+    grid = Grid2D(config, partial(transition_func, wind_distribution=wind))
 
     # Run the CA, save grid state every generation to timeline
     timeline = grid.run()

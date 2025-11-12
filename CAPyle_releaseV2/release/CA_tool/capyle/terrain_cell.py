@@ -41,9 +41,9 @@ class TerrainCell():
             self._strip_moisture()
 
     def ignite(self):
-        match self.type:
+        match (self.type):
             case TerrainType.TOWN:
-                return True
+                self.burning = True
             case TerrainType.LAKE:
                 return
             case TerrainType.SOURCE:
