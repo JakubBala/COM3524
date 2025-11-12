@@ -1,13 +1,17 @@
-version: "3.9"
 services:
-  teaching_tools:
+  com3524_project:
     build: .
+    image: com3524:forestfire
+    container_name: com3524-container
     stdin_open: true
     tty: true
     environment:
-      # Forward GUI display from Mac's XQuartz
-      DISPLAY: host.docker.internal:0
+      DISPLAY: "host.docker.internal:0.0" #windows only
     ports:
-      - "5000:5000" # For Flask/Web apps
+      - "5000:5000"
     volumes:
-      - .:/app      # Map current folder to container
+      - ./CA_tool:/src/CA_tool
+      - ./CAPyle_releaseV2:/src/CAPyle_releaseV2
+      - ./main:/src/main
+      - ./run_tool.py:/src/run_tool.py
+    command: python3 -u run_tool.py

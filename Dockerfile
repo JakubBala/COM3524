@@ -1,10 +1,6 @@
 FROM python:3.8-slim
 
-
 WORKDIR /src
-
-COPY . /src
-
 
 # Install system dependencies including Tk and nano
 
@@ -31,4 +27,4 @@ EXPOSE 5000
 ENV FLASK_APP=ACO_Teaching_Tool/antsp/app.py
 
 #CMD ["python3", "run_tool.py"]
-CMD ["bash"]
+#CMD ["bash"]

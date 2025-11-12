@@ -1,28 +1,30 @@
 import subprocess
 import sys
+import os
 from pathlib import Path
 
+YELLOW = "\033[1;33m"
+RESET = "\033[0m"
+
 TOOLS = {
-    "1": Path("GA_Teaching_Tool/teaching_tool.py"),
-    "2": Path("ACO_Teaching_Tool/antsp/app.py"),
-    "3": Path("CAPyle_releaseV2/release/main.py")
+    "1": Path("CAPyle_releaseV2/release/main.py")
 }
 
 def main():
+    print("Welcome to the COM3524 Tool Runner!")
+    print(f"{YELLOW}⚠️WARNING: Any changes to files in this container WILL be reflected in host files \n (i.e. repo contents) due to mounting.{RESET}")
     while True:
         print("\nSelect a tool to run:")
-        print("1. GA Teaching Tool")
-        print("2. ACO Ants Tool")
-        print("3. CAPyle Tool")
-        print("4. Exit")
+        print("1. Team 13's CA Tool")
+        print("2. Exit and close container")
 
         choice = input("Choose from the above options: ").strip()
         print(f"You entered: {choice}")
 
-        if choice == "4":
+        if choice == "2":
             print("Exiting program.")
             sys.exit(0)
-
+        
         script = TOOLS.get(choice)
 
         if not script or not script.exists():
