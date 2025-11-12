@@ -1,1 +1,4 @@
 .DS_Store
+
+#all pycache files and subfolders
+__pycache__/
