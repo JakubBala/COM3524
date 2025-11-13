@@ -59,7 +59,9 @@ class TerrainCell():
                 self._strip_moisture()
 
     def burn(self):
-        if self.type == TerrainType.SOURCE:
+        if self.type == TerrainType.TOWN:
+            return
+        elif self.type == TerrainType.SOURCE:
             if random.random() > 0.2:
                 return
             else:
