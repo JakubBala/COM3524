@@ -23,7 +23,8 @@ class Grid2D(Grid):
         # wrap size doubled for the row/colum on each side of the grid
         # ie. a wrap size of 1 requires 2 extra rows and 2 extra columns
         self.wrapping_grid = np.empty((numrows + wrapsize*2,
-                                       numcols + wrapsize*2))
+                                       numcols + wrapsize*2),
+                                       dtype=ca_config.dtype)
         # initial state fill
         self.wrapping_grid.fill(ca_config.states[0])
         self.grid = self.wrapping_grid[wrapsize:-wrapsize,
@@ -35,7 +36,7 @@ class Grid2D(Grid):
 
         # if at t = 0 grid has been supplied, set the states
         if ca_config.initial_grid is not None:
-            self.set_grid(ca_config.initial_grid)
+            self.set_grid(ca_config.initial_grid, ca_config.dtype)
 
         # set neighbourhood
         self.set_neighbourhood(ca_config)
@@ -121,16 +122,24 @@ class Grid2D(Grid):
             nhood_arr = self.neighbourhood.neighbourhood
         else:
             nhood_arr = np.ones((3, 3))
+
+        def mask(slice_, mask_value):
+            # If mask_value == 0, fill with None; otherwise keep slice
+            if mask_value == 0:
+                return np.full(slice_.shape, None, dtype=object)
+            else:
+                return slice_
         # Return the NW N NE, W self E, SW S SE neighbourgrids
-        nw = nhood_arr[0, 0] * grid[0:-2, 0:-2]
-        n = nhood_arr[0, 1] * grid[0:-2, 1:-1]
-        ne = nhood_arr[0, 2] * grid[0:-2, 2:]
-        w = nhood_arr[1, 0] * grid[1:-1, 0:-2]
-        e = nhood_arr[1, 2] * grid[1:-1, 2:]
-        sw = nhood_arr[2, 0] * grid[2:, 0:-2]
-        s = nhood_arr[2, 1] * grid[2:, 1:-1]
-        se = nhood_arr[2, 2] * grid[2:, 2:]
-        return np.array([nw, n, ne, w, e, sw, s, se])
+        nw = mask(grid[0:-2, 0:-2], nhood_arr[0, 0])
+        n  = mask(grid[0:-2, 1:-1], nhood_arr[0, 1])
+        ne = mask(grid[0:-2, 2:],   nhood_arr[0, 2])
+        w  = mask(grid[1:-1, 0:-2], nhood_arr[1, 0])
+        e  = mask(grid[1:-1, 2:],   nhood_arr[1, 2])
+        sw = mask(grid[2:, 0:-2],   nhood_arr[2, 0])
+        s  = mask(grid[2:, 1:-1],   nhood_arr[2, 1])
+        se = mask(grid[2:, 2:],     nhood_arr[2, 2])
+        
+        return np.array([nw, n, ne, w, e, sw, s, se], dtype=object)
 
     def count_neighbours(self, neighbour_states):
         """
@@ -156,9 +165,13 @@ class Grid2D(Grid):
         and save the new state to grid """
         # collect the 8 arrays of neighbour states
         ns = self.get_neighbour_states()
+
+        to_index = getattr(self.ca_config, "state_index_function", lambda x: x)
+        ns_numeric = np.array([np.vectorize(to_index)(n) for n in ns], dtype=object)
+        
         # calculate the number of neighbours each cell has of each state
         # return n arrays where n is the number of states
-        nc = self.count_neighbours(ns)
+        nc = self.count_neighbours(ns_numeric)
 
         # apply the user's transition function
         # passing in the states and counts to allow complex rules

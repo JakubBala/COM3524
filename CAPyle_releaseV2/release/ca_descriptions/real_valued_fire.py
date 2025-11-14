@@ -19,11 +19,11 @@ sys.path.append(main_dir_loc + 'capyle/guicomponents')
 # ---
 
 from matplotlib import colors
-from capyle.ca import Grid2D, Neighbourhood, CAConfig, randomise2d
+from capyle.ca import Grid2D
 import capyle.utils as utils
 import numpy as np
-from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
-from CA_tool.capyle.wind import Wind
+from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
+from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
 
 def transition_func(
     grid, 
@@ -53,7 +53,7 @@ def transition_func(
                     if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
                         dx, dy = neighbor_offsets[idx]
 
-                        fire_dir = (math.degrees(math.atan2(dy, dx)) + 360) % 360
+                        fire_dir = (math.degrees(math.atan2(dy, dx)) - 270 + 360) % 360
 
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
@@ -77,7 +77,7 @@ def transition_func(
 
     return grid
 
-def setup(args, wind_direction):
+def setup(args, wind_direction, num_iterations = 100):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
@@ -187,7 +187,7 @@ def setup(args, wind_direction):
     config.state_colors = state_colors
 
     config.wrap = False
-    config.num_generations = 100
+    config.num_generations = num_iterations
     config.timeline_path = f"wd_{wind_direction}_timeline"
 
     if len(args) == 2:
@@ -199,7 +199,7 @@ def setup(args, wind_direction):
 
 def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
     # Open the config object
-    config = setup(sys.argv[1:], direction)
+    config = setup(sys.argv[1:], direction, num_iterations=1000)
 
     wind = Wind(wind_speed, direction, k, c)
 
