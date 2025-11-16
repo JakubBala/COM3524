@@ -22,8 +22,8 @@ from matplotlib import colors
 from capyle.ca import Grid2D
 import capyle.utils as utils
 import numpy as np
-from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
-from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
+from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
+from CA_tool.capyle.wind import Wind
 
 def transition_func(
     grid, 
