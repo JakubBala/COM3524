@@ -53,12 +53,14 @@ def transition_func(
                     if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
                         dx, dy = neighbor_offsets[idx]
 
-                        fire_dir = (math.degrees(math.atan2(dy, dx)) + 360) % 360
+                        ignition_prob = cell.base_ignition_prob
+                        moisture_effect = math.exp(-0.014 * cell.moisture)
 
+                        fire_dir = (math.degrees(math.atan2(dy, dx)) + 360) % 360
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
-                        prob = 0.05 + (1 - 0.05) * wind_prob
-                        prob = min(prob, 1.0)
+                        prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect
+                        prob = max(0.0, min(prob, 1.0))
 
                         if random.random() < prob:
                             ignite_mask[x, y] = True
