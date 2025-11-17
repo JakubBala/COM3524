@@ -39,21 +39,19 @@ def get_results(
     wind = Wind(wind_speed, direction, k, c)
     grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_dropping_plan))
 
-    timeline = grid.run()
+    timeline, time_step = grid.run()
     utils.save(timeline, config.timeline_path)
 
-    time_fire_reaches_town = None
     coverage_at_time = 0.0
 
-    for t, grid_state in enumerate(timeline):
-        total_cells = grid_state.size
-        burning_cells = np.sum(grid_state % 2 == 1)  # all odd numbers are "burning"
-        town_cells = (grid_state == 10) | (grid_state == 11)
+    grid_state = timeline[-1]
+    total_cells = grid_state.size
+    burning_cells = np.sum(grid_state % 2 == 1)  # all odd numbers are "burning"
+    town_cells = (grid_state == 10) | (grid_state == 11)
 
-        if np.any(grid_state[town_cells] == 11):
-            time_fire_reaches_town = t
-            coverage_at_time = burning_cells / total_cells
-            break
+    if np.any(grid_state[town_cells] == 11):
+        time_fire_reaches_town = time_step
+        coverage_at_time = burning_cells / total_cells
 
     return time_fire_reaches_town, coverage_at_time
 

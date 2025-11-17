@@ -50,6 +50,8 @@ class Grid2D(Grid):
         else:
             self.transition_func = transition_func
 
+        self.time_step = 1
+
     def _gen_wrap_indicies(self, wrapsize):
         """Create the indecies used when refreshing the wrap"""
         wrap_width = wrapsize
@@ -177,12 +179,16 @@ class Grid2D(Grid):
         # passing in the states and counts to allow complex rules
         # if the user supplied any addition arguments, pass them here
         if self.additional_args is None:
-            self.grid = self.transition_func(self.grid, ns, nc)
+            self.grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step)
         else:
-            self.grid = self.transition_func(self.grid, ns, nc,
+            self.grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step,
                                              *self.additional_args)
         # refresh wrapping border
         self.refresh_wrap()
+        
+        if stopping_condition:
+            return True
+        self.time_step += 1
 
 
 def randomise2d(grid, background_state, proportions):

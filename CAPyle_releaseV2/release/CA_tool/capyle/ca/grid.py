@@ -69,7 +69,7 @@ class Grid(object):
         # pass in the run function and timeline to the progress bar
         # progress bar executes these
         gui = _ProgressWindow(num_generations, self._runca, timeline)
-        return timeline
+        return timeline, gui.time_step
 
     def _runca(self, num_generations, progressbar, timeline):
         """Running the CA for given generations,
@@ -82,11 +82,16 @@ class Grid(object):
         timeline[0] = self.get_state_grid()
         for i in range(num_generations):
             # calculate the next timestep and save it
-            self.step()
+            progressbar.time_step += 1
+            stopping_condition = self.step()
             timeline[i+1] = self.get_state_grid()
             # update the progress bar every 10 generations
             if (i+1) % 10 == 9:
                 progressbar.set(i+1)
+
+            if stopping_condition:
+                print(f"Stopping condition met at TS: {progressbar.time_step}")
+                return
 
 
 class _ProgressWindow(object):
@@ -121,6 +126,8 @@ class _ProgressWindow(object):
         bar = self.progress_canvas.create_rectangle(0, 0, 0,
                                                     self.HEIGHT, fill="blue")
         self.progress_canvas.pack()
+
+        self.time_step = 1
         self.root.after(1, run(maxval, self, timeline))
 
     def noclose(self):

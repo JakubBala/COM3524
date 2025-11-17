@@ -11,7 +11,7 @@ def create_population(pop_size: int, grid_size=200):
 
     for _ in range(pop_size):
         individual = []
-        for t in range(drops_per_strategy):
+        for t in range(1,drops_per_strategy + 1):
             x = random.randint(0, grid_size-1)
             y = random.randint(0, grid_size-1)
             individual.append((t, x, y))

@@ -22,16 +22,18 @@ from matplotlib import colors
 from capyle.ca import Grid2D
 import capyle.utils as utils
 import numpy as np
-from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
-from CA_tool.capyle.wind import Wind
+from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
+from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
 
 def transition_func(
     grid, 
     neighbour_states, 
     neighbour_counts, 
+    time_step,
     wind_distribution: Wind, 
-    water_dropping_plan=None
+    water_dropping_plan: list[tuple] = None
 ):
+    current_drops = [drop for drop in water_dropping_plan if water_dropping_plan[0] == time_step]
     rows, cols = grid.shape
 
     ignite_mask = np.zeros_like(grid, dtype=bool)
@@ -64,18 +66,23 @@ def transition_func(
                             ignite_mask[x, y] = True
                             break 
 
+    town_ignited = False
     for x in range(rows):
         for y in range(cols):
             cell = grid[x, y]
 
-            if cell.burning:
+            cell_drop = [drop for drop in current_drops if drop[1] == x and drop[2] == y]
+
+            if len(cell_drop) > 0:
+                cell.drop_water()
+            elif cell.burning:
                 cell.burn()
             elif ignite_mask[x, y]:
                 cell.ignite()
             else:
                 cell.regenerate()
 
-    return grid
+    return grid, town_ignited
 
 def setup(args, wind_direction, num_iterations = 100):
     config_path = args[0]
@@ -207,7 +214,8 @@ def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
     grid = Grid2D(config, partial(transition_func, wind_distribution=wind))
 
     # Run the CA, save grid state every generation to timeline
-    timeline = grid.run()
+    timeline, time_step = grid.run()
+    print(f"Stopping Condition met at time {time_step}")
 
     # save updated config to file
     config.save()
