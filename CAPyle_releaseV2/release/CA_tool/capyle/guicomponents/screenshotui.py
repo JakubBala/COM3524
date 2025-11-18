@@ -1,6 +1,7 @@
 import sys
 import tkinter as tk
-from capyle.utils import screenshot, set_entry, get_dir_dialog
+from .gui_utils import (set_entry, get_dir_dialog)
+from CA_tool.capyle.utils import screenshot
 
 
 class _ScreenshotUI(tk.Frame):

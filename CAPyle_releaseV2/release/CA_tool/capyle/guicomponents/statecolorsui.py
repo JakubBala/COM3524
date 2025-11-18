@@ -1,6 +1,6 @@
 import tkinter as tk
-from capyle.guicomponents import _ConfigUIComponent
-from capyle.utils import rgb_to_hex
+from CA_tool.capyle.guicomponents import _ConfigUIComponent
+from CA_tool.capyle.utils import rgb_to_hex
 import numpy as np
 from tkinter import colorchooser as cc
 

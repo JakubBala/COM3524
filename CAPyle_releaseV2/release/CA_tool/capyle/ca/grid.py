@@ -1,6 +1,6 @@
 import numpy as np
-from capyle.ca import Neighbourhood
-from capyle.utils import scale_array, verify_gens
+from CA_tool.capyle.ca import Neighbourhood
+from CA_tool.capyle.utils import scale_array, verify_gens
 import tkinter as tk
 
 

@@ -1,6 +1,6 @@
 import tkinter as tk
 import numpy as np
-from capyle.guicomponents import (_ConfigUIComponent, _Separator,
+from CA_tool.capyle.guicomponents import (_ConfigUIComponent, _Separator,
                                   _EditInitialGridWindow)
 
 

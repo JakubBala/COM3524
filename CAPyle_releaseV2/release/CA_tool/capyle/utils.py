@@ -4,6 +4,7 @@ import subprocess
 import time
 import platform
 import os.path
+import tkinter as tk
 import numpy as np
 
 
@@ -320,7 +321,3 @@ def get_logo():
     fp = sys.path[0] + "/icons/" + fn
     logo = tk.PhotoImage(file=fp)
     return logo
-
-
-# The above functions are required before importing the remainder
-from capyle.guicomponents.gui_utils import *

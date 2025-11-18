@@ -1,7 +1,8 @@
 import tkinter as tk
 import numpy as np
-from capyle.utils import gens_to_dims, alerterror, alertcontinue
-from capyle.guicomponents import (_GenerationsUI, _GridDimensionsUI,
+from CA_tool.capyle.utils import gens_to_dims
+from .gui_utils import (alerterror, alertcontinue)
+from CA_tool.capyle.guicomponents import (_GenerationsUI, _GridDimensionsUI,
                                   _Separator, _NeighbourhoodUI, _RuleNumberUI,
                                   _StateColorsUI, _InitialGridUI)
 
@@ -19,34 +20,30 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
-        # if self.ca_config.dimensions == 2:
-        #     self.griddims_entry = _GridDimensionsUI(self)
-        #     self.griddims_entry.pack(fill=tk.BOTH)
-        # else:
-        #     self.rulenum_entry = _RuleNumberUI(self)
-        #     self.rulenum_entry.pack(fill=tk.BOTH)
-
-        if self.ca_config.dimensions != 2:
+        if self.ca_config.dimensions == 2:
+            self.griddims_entry = _GridDimensionsUI(self)
+            self.griddims_entry.pack(fill=tk.BOTH)
+        else:
             self.rulenum_entry = _RuleNumberUI(self)
             self.rulenum_entry.pack(fill=tk.BOTH)
 
         self.separator()
 
         # Gererations
-        # self.generations_entry = _GenerationsUI(self)
-        # self.generations_entry.pack(fill=tk.BOTH)
+        self.generations_entry = _GenerationsUI(self)
+        self.generations_entry.pack(fill=tk.BOTH)
 
         self.separator()
 
         # Neighbourhood selector gui
-        # self.nhood_select = _NeighbourhoodUI(self, self.ca_config.dimensions)
-        # self.nhood_select.pack(fill=tk.BOTH)
+        self.nhood_select = _NeighbourhoodUI(self, self.ca_config.dimensions)
+        self.nhood_select.pack(fill=tk.BOTH)
 
         self.separator()
 
         # initial grid config options
-        # self.init_grid = _InitialGridUI(self, self.ca_config)
-        # self.init_grid.pack(fill=tk.BOTH)
+        self.init_grid = _InitialGridUI(self, self.ca_config)
+        self.init_grid.pack(fill=tk.BOTH)
 
         self.separator()
 

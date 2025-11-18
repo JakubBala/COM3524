@@ -1,6 +1,6 @@
 import numpy as np
-from capyle.ca import Grid, Neighbourhood
-from capyle.utils import clip_numeric
+from CA_tool.capyle.ca import Grid, Neighbourhood
+from CA_tool.capyle.utils import clip_numeric
 
 
 class Grid2D(Grid):
