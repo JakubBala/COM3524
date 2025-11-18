@@ -22,7 +22,6 @@ docker run -it --rm ^
     --name %CONTAINER_NAME% ^
     -e DISPLAY=%DISPLAY% ^
     -p 5000:5000 ^
-    -v ./CA_tool:/src/CA_tool ^
     -v ./CAPyle_releaseV2:/src/CAPyle_releaseV2 ^
     -v ./main:/src/main ^
     -v ./run_tool.py:/src/run_tool.py ^

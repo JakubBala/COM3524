@@ -19,8 +19,8 @@ sys.path.append(main_dir_loc + 'capyle/guicomponents')
 # ---
 
 from matplotlib import colors
-from capyle.ca import Grid2D
-import capyle.utils as utils
+from CA_tool.capyle.ca import Grid2D
+import CA_tool.capyle.utils as utils
 import numpy as np
 from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
 from CA_tool.capyle.wind import Wind

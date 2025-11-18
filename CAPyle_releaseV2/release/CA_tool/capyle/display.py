@@ -130,11 +130,11 @@ class Display(object):
         generations, dimensions, colors, neighbourhood, ...
         """
         # Neighbourhood, generation and dimensions controls
-        self.loaded_title.config(text=self.ca_config.title)
-        if self.config_ui is not None:
-            self.config_ui.destroy()
-        self.config_ui = _ConfigFrame(self.lframe, self.ca_config)
-        self.config_ui.pack()
+        # self.loaded_title.config(text=self.ca_config.title)
+        # if self.config_ui is not None:
+        #     self.config_ui.destroy()
+        # self.config_ui = _ConfigFrame(self.lframe, self.ca_config)
+        # self.config_ui.pack()
 
         # Bottom run button
         if self.lbotframe is not None:
