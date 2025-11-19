@@ -77,7 +77,7 @@ def transition_func(
 
     return grid
 
-def setup(args, wind_direction, num_iterations = 100):
+def setup(args, wind_direction):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
@@ -187,7 +187,7 @@ def setup(args, wind_direction, num_iterations = 100):
     config.state_colors = state_colors
 
     config.wrap = False
-    config.num_generations = num_iterations
+    # config.num_generations = num_iterations
     config.timeline_path = f"wd_{wind_direction}_timeline"
 
     if len(args) == 2:
@@ -199,7 +199,7 @@ def setup(args, wind_direction, num_iterations = 100):
 
 def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
     # Open the config object
-    config = setup(sys.argv[1:], direction, num_iterations=1000)
+    config = setup(sys.argv[1:], direction)
 
     wind = Wind(wind_speed, direction, k, c)
 
