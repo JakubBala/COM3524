@@ -16,6 +16,14 @@ sys.path.append(main_dir_loc)
 sys.path.append(main_dir_loc + 'capyle')
 sys.path.append(main_dir_loc + 'capyle/ca')
 sys.path.append(main_dir_loc + 'capyle/guicomponents')
+
+import os
+import json
+import CA_tool.capyle as capyle_module
+water_json_path = os.path.join(
+    os.path.dirname(capyle_module.__file__),
+    "waterdrops.json"
+)
 # ---
 
 from matplotlib import colors
@@ -30,8 +38,10 @@ def transition_func(
     neighbour_states, 
     neighbour_counts, 
     wind_distribution: Wind, 
-    water_dropping_plan=None
+    water_dropping_plan=None,
+    step_num=0
 ):
+    
     rows, cols = grid.shape
 
     ignite_mask = np.zeros_like(grid, dtype=bool)
@@ -39,6 +49,17 @@ def transition_func(
     neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
                     (-1,0),           (1,0),
                     (-1,1),  (0,1),   (1,1)]
+
+    water_mask = np.zeros((rows, cols), dtype=bool)
+    if water_dropping_plan is not None:
+        step_key = str(step_num)
+        if step_key in water_dropping_plan:
+            # print(f"Step {step_num}: Water drops at coordinates:")
+            for (x, y) in water_dropping_plan[step_key]:
+                x, y = int(x), int(y)
+                if 0 <= x < rows and 0 <= y < cols:
+                    water_mask[x, y] = True
+                    print(f"  ({x}, {y})")
 
     for x in range(rows):
         for y in range(cols):
@@ -68,7 +89,14 @@ def transition_func(
         for y in range(cols):
             cell = grid[x, y]
 
-            if cell.burning:
+            # remove waterdropped effect after the dropping step
+            if(cell.waterdropped):
+                cell.waterdropped = False
+
+            elif water_mask[x, y]:
+                cell.drop_water()
+
+            elif cell.burning:
                 cell.burn()
             elif ignite_mask[x, y]:
                 cell.ignite()
@@ -163,7 +191,7 @@ def setup(args, wind_direction):
     
     config.state_index_function = cell_to_state_index
 
-    config.states = list(range(len(TerrainType) * 2))
+    config.states = list(range(len(TerrainType) * 3))
 
     def type_to_colour(type: TerrainType) -> str:
         color_map = {
@@ -181,8 +209,10 @@ def setup(args, wind_direction):
     for terrain in TerrainType:
         base_rgb = colors.to_rgb(type_to_colour(terrain))
         fire_rgb = (1.0, 0.0, 0.0) 
+        waterdrop_rgb = (0.0, 0.0, 1.0)
         state_colors.append(base_rgb)
         state_colors.append(fire_rgb)
+        state_colors.append(waterdrop_rgb)
 
     config.state_colors = state_colors
 
@@ -203,8 +233,18 @@ def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
 
     wind = Wind(wind_speed, direction, k, c)
 
+    #--- LOAD WATER PLAN JSON---
+
+    load_water_plan = True
+    
+    water_plan = None
+
+    if(load_water_plan):
+        with open(water_json_path, "r") as f:
+            water_plan = json.load(f)
+
     # Create grid object
-    grid = Grid2D(config, partial(transition_func, wind_distribution=wind))
+    grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_plan))
 
     # Run the CA, save grid state every generation to timeline
     timeline = grid.run()

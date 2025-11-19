@@ -14,7 +14,7 @@ class Grid(object):
         """toString function"""
         return np.array_str(self.grid)
 
-    def step(self):
+    def step(self, this_step_num):
         """Enforce a step funciton in subclasses"""
         pass
 
@@ -82,7 +82,7 @@ class Grid(object):
         timeline[0] = self.get_state_grid()
         for i in range(num_generations):
             # calculate the next timestep and save it
-            self.step()
+            self.step(i)
             timeline[i+1] = self.get_state_grid()
             # update the progress bar every 10 generations
             if (i+1) % 10 == 9:
