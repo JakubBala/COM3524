@@ -23,7 +23,6 @@ docker run -it --rm ^
     -e DISPLAY=%DISPLAY% ^
     -p 5000:5000 ^
     -v ./CAPyle_releaseV2:/src/CAPyle_releaseV2 ^
-    -v ./main:/src/main ^
     -v ./run_tool.py:/src/run_tool.py ^
     -v ./test_tool.py:/src/test_tool.py ^
     -v ./water_dropping_ea.py:/src/water_dropping_ea.py ^
