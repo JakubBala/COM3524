@@ -39,7 +39,7 @@ def transition_func(
     neighbour_counts, 
     time_step,
     wind_distribution: Wind, 
-    water_dropping_plan: list[tuple] = None
+    water_dropping_plan=None
 ):
     rows, cols = grid.shape
 

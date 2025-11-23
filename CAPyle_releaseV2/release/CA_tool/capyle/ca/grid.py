@@ -14,7 +14,7 @@ class Grid(object):
         """toString function"""
         return np.array_str(self.grid)
 
-    def step(self, this_step_num):
+    def step(self):
         """Enforce a step funciton in subclasses"""
         pass
 

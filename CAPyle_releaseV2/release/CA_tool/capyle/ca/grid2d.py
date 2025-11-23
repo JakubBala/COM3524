@@ -162,7 +162,7 @@ class Grid2D(Grid):
             state_counts[i] = countg
         return state_counts
 
-    def step(self, step_num):
+    def step(self):
         """ Calculate the next timestep by applying the transistion function
         and save the new state to grid """
         # collect the 8 arrays of neighbour states
