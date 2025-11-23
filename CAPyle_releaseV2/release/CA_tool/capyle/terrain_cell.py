@@ -33,6 +33,22 @@ class TerrainCell():
         self.regen_rate = regen_rate
         self.burn_rate = burn_rate
         self.waterdropped = waterdropped
+        self.base_ignition_prob = self.get_base_ignition_prob()
+
+    def get_base_ignition_prob(self) -> float:
+        match self.type:
+            case TerrainType.CHAPARRAL:
+                return 0.45
+            case TerrainType.CANYON_SCRUBLAND:
+                return 0.55
+            case TerrainType.DENSE_FOREST:
+                return 0.25
+            case TerrainType.TOWN:
+                return 1.0
+            case TerrainType.LAKE:
+                return 0.0
+            case TerrainType.SOURCE:
+                return 1.0
 
     def regenerate(self):
         if self.type != TerrainType.TOWN and \
@@ -56,7 +72,7 @@ class TerrainCell():
                         self.burning = True
                         self.fuel -= self.burn_rate
                     else:
-                        self.fuel = 0.0
+                        self.fuel = 0.
         
                 self._strip_moisture()
 

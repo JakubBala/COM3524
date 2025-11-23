@@ -26,15 +26,12 @@ class Wind():
         diff = self._direction_difference(self.direction, fire_direction)
         alignment = math.cos(math.radians(diff))
 
-        if alignment <= 0:
-            return 0.0
-        
-        speed_factor = max((v - 2) / 10, 0.1)
-        speed_factor = min(speed_factor, 1.0)
+        speed_factor = (1+ 0.025 * v) ** 2.8
+        speed_factor = min(max(0.4, speed_factor), 2.0)
 
-        probability = alignment * speed_factor
+        probability = 1.0 + alignment * (speed_factor - 1.0)
 
-        return max(0.0, min(1.0, probability))
+        return max(0.4, min(2.0, probability))
 
 def estimate_weibull_mle(wind_speeds, max_iter=100, tol=1e-6):
     n = len(wind_speeds)
