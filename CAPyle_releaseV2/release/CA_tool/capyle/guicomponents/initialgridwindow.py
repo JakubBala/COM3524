@@ -2,10 +2,10 @@ import tkinter as tk
 import tkinter.font as tkFont
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from capyle.ca import randomise1d, randomise2d
-from capyle.utils import (rgb_to_hex, clip_numeric, scale_array,
-                          set_icon, set_entry, clear_entry)
-from capyle.guicomponents import _Separator, _CAGraph
+from CA_tool.capyle.ca import randomise1d, randomise2d
+from CA_tool.capyle.utils import (rgb_to_hex, clip_numeric, scale_array)
+from .gui_utils import (set_icon, set_entry, clear_entry)
+from CA_tool.capyle.guicomponents import _Separator, _CAGraph
 
 
 class _EditInitialGridWindow(tk.Toplevel):

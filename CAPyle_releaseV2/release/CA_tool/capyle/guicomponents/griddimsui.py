@@ -1,6 +1,6 @@
 import tkinter as tk
-from capyle.guicomponents import _ConfigUIComponent
-from capyle.utils import is_valid_integer
+from CA_tool.capyle.guicomponents import _ConfigUIComponent
+from CA_tool.capyle.utils import is_valid_integer
 
 
 class _GridDimensionsUI(tk.Frame, _ConfigUIComponent):

@@ -1,6 +1,6 @@
 import numpy as np
-from capyle.ca import Grid, Neighbourhood
-from capyle.utils import clip_numeric
+from CA_tool.capyle.ca import Grid, Neighbourhood
+from CA_tool.capyle.utils import clip_numeric
 
 
 class Grid2D(Grid):
@@ -162,7 +162,7 @@ class Grid2D(Grid):
             state_counts[i] = countg
         return state_counts
 
-    def step(self):
+    def step(self, step_num):
         """ Calculate the next timestep by applying the transistion function
         and save the new state to grid """
         # collect the 8 arrays of neighbour states

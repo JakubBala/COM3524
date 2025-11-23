@@ -1,6 +1,6 @@
 import numpy as np
-from capyle.ca import Neighbourhood
-from capyle.utils import scale_array, verify_gens
+from CA_tool.capyle.ca import Neighbourhood
+from CA_tool.capyle.utils import scale_array, verify_gens
 import tkinter as tk
 
 
@@ -14,7 +14,7 @@ class Grid(object):
         """toString function"""
         return np.array_str(self.grid)
 
-    def step(self):
+    def step(self, this_step_num):
         """Enforce a step funciton in subclasses"""
         pass
 

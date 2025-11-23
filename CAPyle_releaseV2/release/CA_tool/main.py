@@ -9,7 +9,7 @@ sys.path.append(main_dir_loc + 'capyle/ca')
 sys.path.append(main_dir_loc + 'capyle/guicomponents')
 
 # import display
-from capyle import Display
+from CA_tool.capyle import Display
 
 
 def main():

@@ -1,7 +1,7 @@
 import tkinter as tk
-from capyle.guicomponents import _ConfigUIComponent, _Separator
+from CA_tool.capyle.guicomponents import _ConfigUIComponent, _Separator
 import numpy as np
-from utils import clip_numeric
+from CA_tool.capyle.utils import clip_numeric
 
 
 class _NeighbourhoodUI(tk.Frame, _ConfigUIComponent):

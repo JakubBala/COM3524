@@ -1,7 +1,7 @@
 import sys
 import tkinter as tk
 from tkinter import messagebox
-from capyle.guicomponents import _Separator
+from CA_tool.capyle.guicomponents import _Separator
 
 
 def set_icon(root):

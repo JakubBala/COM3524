@@ -1,7 +1,11 @@
 import tkinter as tk
 import numpy as np
-from capyle.utils import gens_to_dims, alerterror, alertcontinue
-from capyle.guicomponents import (_GenerationsUI, _GridDimensionsUI,
+import os
+import subprocess
+import platform
+from CA_tool.capyle.utils import gens_to_dims
+from .gui_utils import (alerterror, alertcontinue)
+from CA_tool.capyle.guicomponents import (_GenerationsUI, _GridDimensionsUI,
                                   _Separator, _NeighbourhoodUI, _RuleNumberUI,
                                   _StateColorsUI, _InitialGridUI)
 
@@ -19,14 +23,14 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
-        if self.ca_config.dimensions == 2:
-            self.griddims_entry = _GridDimensionsUI(self)
-            self.griddims_entry.pack(fill=tk.BOTH)
-        else:
-            self.rulenum_entry = _RuleNumberUI(self)
-            self.rulenum_entry.pack(fill=tk.BOTH)
+        # if self.ca_config.dimensions == 2:
+        #     self.griddims_entry = _GridDimensionsUI(self)
+        #     self.griddims_entry.pack(fill=tk.BOTH)
+        # else:
+        #     self.rulenum_entry = _RuleNumberUI(self)
+        #     self.rulenum_entry.pack(fill=tk.BOTH)
 
-        self.separator()
+        # self.separator()
 
         # Gererations
         self.generations_entry = _GenerationsUI(self)
@@ -41,14 +45,18 @@ class _ConfigFrame(tk.Frame):
         self.separator()
 
         # initial grid config options
-        self.init_grid = _InitialGridUI(self, self.ca_config)
-        self.init_grid.pack(fill=tk.BOTH)
+        # self.init_grid = _InitialGridUI(self, self.ca_config)
+        # self.init_grid.pack(fill=tk.BOTH)
 
-        self.separator()
+        # self.separator()
 
         # Colour selector
-        self.state_colors = _StateColorsUI(self, self.ca_config, self.ca_graph)
-        self.state_colors.pack(fill=tk.BOTH)
+        # self.state_colors = _StateColorsUI(self, self.ca_config, self.ca_graph)
+        # self.state_colors.pack(fill=tk.BOTH)
+
+        # btn_open_json = tk.Button(self, text="Open waterdrops.json",
+        #                   command=self.open_waterdrops)
+        # btn_open_json.pack()
 
         self.separator()
 
@@ -61,20 +69,20 @@ class _ConfigFrame(tk.Frame):
 
     def reset(self):
         """Reset all options to software defaults"""
-        if self.ca_config.dimensions == 2:
-            self.griddims_entry.set_default()
-        else:
-            self.rulenum_entry.set_default()
+        # if self.ca_config.dimensions == 2:
+        #     self.griddims_entry.set_default()
+        # else:
+        #     self.rulenum_entry.set_default()
         self.generations_entry.set_default()
         self.nhood_select.set_default()
 
     def get_config(self, ca_config, validate=False):
         """Get the config from the UI and store in a CAConfig object"""
         ca_config.num_generations = self.generations_entry.get_value()
-        ca_config.state_colors = self.state_colors.get_value()
+        # ca_config.state_colors = self.state_colors.get_value()
 
         if ca_config.dimensions == 2:
-            ca_config.grid_dims = self.griddims_entry.get_value()
+            # ca_config.grid_dims = self.griddims_entry.get_value()
             ca_config.nhood_arr = self.nhood_select.get_value() + 0
         else:
             ca_config.rule_num = self.rulenum_entry.get_value()
@@ -139,14 +147,34 @@ class _ConfigFrame(tk.Frame):
     def update(self, ca_config, ca_graph):
         self.ca_config = ca_config
         self.ca_graph = ca_graph
-        if ca_config.dimensions == 2:
-            self.griddims_entry.set(self.griddims_entry.COLS,
-                                    self.ca_config.grid_dims[0])
-            self.griddims_entry.set(self.griddims_entry.ROWS,
-                                    self.ca_config.grid_dims[1])
-        else:
-            self.rulenum_entry.set(ca_config.rule_num)
+        # if ca_config.dimensions == 2:
+        #     self.griddims_entry.set(self.griddims_entry.COLS,
+        #                             self.ca_config.grid_dims[0])
+        #     self.griddims_entry.set(self.griddims_entry.ROWS,
+        #                             self.ca_config.grid_dims[1])
+        # else:
+        #     self.rulenum_entry.set(ca_config.rule_num)
         self.nhood_select.set(self.ca_config.nhood_arr)
         self.generations_entry.set(self.ca_config.num_generations)
-        self.init_grid.update_config(self.ca_config)
-        self.state_colors.update(self.ca_config, ca_graph)
+        # self.init_grid.update_config(self.ca_config)
+        # self.state_colors.update(self.ca_config, ca_graph)
+
+    def open_waterdrops(self):
+        """Open the JSON file one directory up."""
+        # Path to file: one directory up from the current file
+        json_path = os.path.join(os.path.dirname(__file__), "..", "waterdrops.json")
+        json_path = os.path.abspath(json_path)
+
+        if not os.path.exists(json_path):
+            alerterror("File error", f"Could not find file:\n{json_path}")
+            return
+
+        # Try to open using OS default application
+        system = platform.system()
+
+        if system == "Windows":
+            os.startfile(json_path)
+        elif system == "Darwin":  # macOS
+            subprocess.call(["open", json_path])
+        else:  # Linux / other
+            subprocess.call(["xdg-open", json_path])
