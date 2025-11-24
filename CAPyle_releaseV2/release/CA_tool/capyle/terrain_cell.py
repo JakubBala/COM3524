@@ -11,6 +11,57 @@ class TerrainType(Enum):
     SOURCE = 5
     TOWN = 6
 
+IGNITION_PROB_TABLE = {
+    TerrainType.CHAPARRAL: {
+        TerrainType.CHAPARRAL: 0.45,
+        TerrainType.CANYON_SCRUBLAND: 0.5,
+        TerrainType.DENSE_FOREST: 0.25,
+        TerrainType.TOWN: 0.25,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.CANYON_SCRUBLAND: {
+        TerrainType.CHAPARRAL: 0.45,
+        TerrainType.CANYON_SCRUBLAND: 0.5,
+        TerrainType.DENSE_FOREST: 0.25,
+        TerrainType.TOWN: 0.35,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.DENSE_FOREST: {
+        TerrainType.CHAPARRAL: 0.15,
+        TerrainType.CANYON_SCRUBLAND: 0.24,
+        TerrainType.DENSE_FOREST: 0.15,
+        TerrainType.TOWN: 0.20,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.SOURCE: {
+        TerrainType.CHAPARRAL: 0.8,
+        TerrainType.CANYON_SCRUBLAND: 0.9,
+        TerrainType.DENSE_FOREST: 0.7,
+        TerrainType.TOWN: 0.95,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 1.0
+    },
+    TerrainType.TOWN: {
+        TerrainType.CHAPARRAL: 0.2,
+        TerrainType.CANYON_SCRUBLAND: 0.2,
+        TerrainType.DENSE_FOREST: 0.2,
+        TerrainType.TOWN: 0.15,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.LAKE: {
+        TerrainType.CHAPARRAL: 0.0,
+        TerrainType.CANYON_SCRUBLAND: 0.0,
+        TerrainType.DENSE_FOREST: 0.0,
+        TerrainType.TOWN: 0.0,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.0
+    },
+}
+
 class TerrainCell():
     def __init__(
         self, 
@@ -33,6 +84,9 @@ class TerrainCell():
         self.regen_rate = regen_rate
         self.burn_rate = burn_rate
         self.waterdropped = waterdropped
+
+    def get_ignition_prob(self, ignition_source: TerrainType) -> float:
+        return IGNITION_PROB_TABLE[ignition_source][self.type]
 
     def regenerate(self):
         if self.type != TerrainType.TOWN and \
