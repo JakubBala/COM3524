@@ -53,7 +53,8 @@ def transition_func(
                     if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
                         dx, dy = neighbor_offsets[idx]
 
-                        ignition_prob = cell.base_ignition_prob
+                        ignition_source = neighbor.type
+                        ignition_prob = cell.get_ignition_prob(ignition_source)
                         moisture_effect = math.exp(-0.014 * cell.moisture)
 
                         fire_dir = (math.degrees(math.atan2(dy, dx)) + 360) % 360

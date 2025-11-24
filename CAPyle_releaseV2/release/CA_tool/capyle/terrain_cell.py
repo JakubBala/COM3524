@@ -11,6 +11,57 @@ class TerrainType(Enum):
     SOURCE = 5
     TOWN = 6
 
+IGNITION_PROB_TABLE = {
+    TerrainType.CHAPARRAL: {
+        TerrainType.CHAPARRAL: 0.45,
+        TerrainType.CANYON_SCRUBLAND: 0.5,
+        TerrainType.DENSE_FOREST: 0.25,
+        TerrainType.TOWN: 0.25,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.CANYON_SCRUBLAND: {
+        TerrainType.CHAPARRAL: 0.45,
+        TerrainType.CANYON_SCRUBLAND: 0.5,
+        TerrainType.DENSE_FOREST: 0.25,
+        TerrainType.TOWN: 0.35,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.DENSE_FOREST: {
+        TerrainType.CHAPARRAL: 0.15,
+        TerrainType.CANYON_SCRUBLAND: 0.24,
+        TerrainType.DENSE_FOREST: 0.15,
+        TerrainType.TOWN: 0.20,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.SOURCE: {
+        TerrainType.CHAPARRAL: 0.8,
+        TerrainType.CANYON_SCRUBLAND: 0.9,
+        TerrainType.DENSE_FOREST: 0.7,
+        TerrainType.TOWN: 0.95,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 1.0
+    },
+    TerrainType.TOWN: {
+        TerrainType.CHAPARRAL: 0.2,
+        TerrainType.CANYON_SCRUBLAND: 0.2,
+        TerrainType.DENSE_FOREST: 0.2,
+        TerrainType.TOWN: 0.15,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.35
+    },
+    TerrainType.LAKE: {
+        TerrainType.CHAPARRAL: 0.0,
+        TerrainType.CANYON_SCRUBLAND: 0.0,
+        TerrainType.DENSE_FOREST: 0.0,
+        TerrainType.TOWN: 0.0,
+        TerrainType.LAKE: 0.0,
+        TerrainType.SOURCE: 0.0
+    },
+}
+
 class TerrainCell():
     def __init__(
         self, 
@@ -31,22 +82,9 @@ class TerrainCell():
         self.burning = burning
         self.regen_rate = regen_rate
         self.burn_rate = burn_rate
-        self.base_ignition_prob = self.get_base_ignition_prob()
 
-    def get_base_ignition_prob(self) -> float:
-        match self.type:
-            case TerrainType.CHAPARRAL:
-                return 0.45
-            case TerrainType.CANYON_SCRUBLAND:
-                return 0.55
-            case TerrainType.DENSE_FOREST:
-                return 0.25
-            case TerrainType.TOWN:
-                return 1.0
-            case TerrainType.LAKE:
-                return 0.0
-            case TerrainType.SOURCE:
-                return 1.0
+    def get_ignition_prob(self, ignition_source: TerrainType) -> float:
+        return IGNITION_PROB_TABLE[ignition_source][self.type]
 
     def regenerate(self):
         if self.type != TerrainType.TOWN and \
@@ -70,7 +108,7 @@ class TerrainCell():
                         self.burning = True
                         self.fuel -= self.burn_rate
                     else:
-                        self.fuel = 0.
+                        self.fuel = 0.0
         
                 self._strip_moisture()
 
