@@ -71,8 +71,9 @@ class TerrainCell():
         regen_rate: float = None,
         burn_rate: float = None,
         burning: bool = False,
+        burnt: bool = False,
         waterdropped: bool = False,
-        burnt_period: int = 200 # of steps a cell remains burnt out
+        burnt_period: int = 500 # of steps a cell remains burnt out
     ):
         self.type = type
         self.moisture_decay_rate = moisture_decay
@@ -87,7 +88,7 @@ class TerrainCell():
         self.waterdropped = waterdropped
 
         #burnt state tracking
-        self.burnt = False
+        self.burnt = burnt
         self.burnt_timer = 0
         self.burnt_period = burnt_period
         self.burn_duration = 0
@@ -115,6 +116,9 @@ class TerrainCell():
             self._strip_moisture()
 
     def ignite(self):
+        if self.burnt:
+            return
+        
         match (self.type):
             case TerrainType.TOWN:
                 self.burning = True

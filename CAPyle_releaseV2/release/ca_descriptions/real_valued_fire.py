@@ -65,7 +65,7 @@ def transition_func(
         for y in range(cols):
             cell = grid[x, y]
 
-            if cell.burning:
+            if cell.burning or cell.burnt:
                 continue
 
             for idx, ns_array in enumerate(neighbour_states):
