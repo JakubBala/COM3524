@@ -3,12 +3,13 @@ import tkinter as tk
 import tkinter.font as tkFont
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from capyle.utils import (set_icon, get_filename_dialog, get_logo,
-                          prerun_ca, run_ca, extract_states)
-from capyle.ca import CAConfig
-from capyle.guicomponents import (_ConfigFrame, _CAGraph, _ScreenshotUI,
+from CA_tool.capyle.guicomponents.gui_utils import (set_icon, get_filename_dialog)
+from CA_tool.capyle.utils import (get_logo, prerun_ca, run_ca, extract_states)
+
+from CA_tool.capyle.ca import CAConfig
+from CA_tool.capyle.guicomponents import (_ConfigFrame, _CAGraph, _ScreenshotUI,
                                   _CreateCA, _AboutWindow)
-from capyle import _PlaybackControls
+from CA_tool.capyle import _PlaybackControls
 
 
 class Display(object):

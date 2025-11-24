@@ -1,6 +1,6 @@
 import numpy as np
-from capyle.ca import Neighbourhood
-from capyle.utils import scale_array, verify_gens
+from CA_tool.capyle.ca import Neighbourhood
+from CA_tool.capyle.utils import scale_array, verify_gens
 import tkinter as tk
 
 
@@ -14,14 +14,14 @@ class Grid(object):
         """toString function"""
         return np.array_str(self.grid)
 
-    def step(self):
+    def step(self, this_step_num):
         """Enforce a step funciton in subclasses"""
         pass
 
-    def set_grid(self, g):
+    def set_grid(self, g, dtype):
         """Set self.grid to supplied grid, scaling the supplied grid
         if nessacary"""
-        g = np.array(g)
+        g = np.array(g, dtype=dtype)
 
         if g.shape[0] > 1:
             # 2d grid
@@ -46,6 +46,10 @@ class Grid(object):
         if not (Neighbourhood is (self.neighbourhood.__class__)):
             self.neighbourhood = Neighbourhood(self.neighbourhood,
                                                dims=ca_config.dimensions)
+
+    def get_state_grid(self):
+        to_index = getattr(self.ca_config, "state_index_function", lambda x: x)
+        return np.vectorize(to_index)(self.grid)
 
     def run(self):
         """Set up running the CA for given generations,
@@ -75,11 +79,11 @@ class Grid(object):
             This function is passed to the progress bar for it to execute
         """
         # save initial state
-        timeline[0] = np.copy(self.grid)
+        timeline[0] = self.get_state_grid()
         for i in range(num_generations):
             # calculate the next timestep and save it
-            self.step()
-            timeline[i+1] = np.copy(self.grid)
+            self.step(i)
+            timeline[i+1] = self.get_state_grid()
             # update the progress bar every 10 generations
             if (i+1) % 10 == 9:
                 progressbar.set(i+1)

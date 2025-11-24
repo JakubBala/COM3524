@@ -1,7 +1,7 @@
 import sys
 import numpy as np
-from capyle.utils import save, get_metadata, scale_array, gens_to_dims
-from capyle.ca import Neighbourhood
+from CA_tool.capyle.utils import save, get_metadata, scale_array, gens_to_dims
+from CA_tool.capyle.ca import Neighbourhood
 
 
 class CAConfig(object):

@@ -28,5 +28,7 @@ EXPOSE 5000
 #Set the environment variable for Flask
 ENV FLASK_APP=ACO_Teaching_Tool/antsp/app.py
 
+# CMD ["python3", "test_tool.py"]
+# CMD ["python3", "water_dropping_ea.py"]
 CMD ["python3", "run_tool.py"]
 #CMD ["bash"]

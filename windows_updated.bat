@@ -22,11 +22,11 @@ docker run -it --rm ^
     --name %CONTAINER_NAME% ^
     -e DISPLAY=%DISPLAY% ^
     -p 5000:5000 ^
-    -v ./CA_tool:/src/CA_tool ^
     -v ./CAPyle_releaseV2:/src/CAPyle_releaseV2 ^
-    -v ./main:/src/main ^
     -v ./run_tool.py:/src/run_tool.py ^
+    -v ./test_tool.py:/src/test_tool.py ^
+    -v ./water_dropping_ea.py:/src/water_dropping_ea.py ^
     %IMAGE_NAME% ^
-    python3 run_tool.py
+    python3 -m run_tool
 
 pause

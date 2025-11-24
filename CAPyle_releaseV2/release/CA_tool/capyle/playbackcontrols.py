@@ -1,4 +1,4 @@
-from capyle.guicomponents import _PlaybackUI
+from CA_tool.capyle.guicomponents import _PlaybackUI
 
 
 class _PlaybackControls():

@@ -70,7 +70,8 @@ class TerrainCell():
         burn_threshold: float = 0.5,
         regen_rate: float = None,
         burn_rate: float = None,
-        burning: bool = False
+        burning: bool = False,
+        waterdropped: bool = False
     ):
         self.type = type
         self.moisture_decay_rate = moisture_decay
@@ -82,6 +83,7 @@ class TerrainCell():
         self.burning = burning
         self.regen_rate = regen_rate
         self.burn_rate = burn_rate
+        self.waterdropped = waterdropped
 
     def get_ignition_prob(self, ignition_source: TerrainType) -> float:
         return IGNITION_PROB_TABLE[ignition_source][self.type]
@@ -113,7 +115,9 @@ class TerrainCell():
                 self._strip_moisture()
 
     def burn(self):
-        if self.type == TerrainType.SOURCE:
+        if self.type == TerrainType.TOWN:
+            return
+        elif self.type == TerrainType.SOURCE:
             if random.random() > 0.2:
                 return
             else:
@@ -128,6 +132,7 @@ class TerrainCell():
             self._strip_moisture()
     
     def drop_water(self, max_moisture: float = 0.5):
+        self.waterdropped = True
         match (self.type):
             case TerrainType.TOWN:
                 return
@@ -149,5 +154,12 @@ class TerrainCell():
 def cell_to_state_index(cell: TerrainCell) -> int:
     if cell is None or isinstance(cell, numbers.Integral):
         return -1 
-    base = (cell.type.value - 1) * 2
-    return base + int(cell.burning)
+
+    base = (cell.type.value - 1) * 3
+
+    if cell.waterdropped:
+        return base + 2
+    elif cell.burning:
+        return base + 1
+    else:
+        return base + 0
