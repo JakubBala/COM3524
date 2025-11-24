@@ -71,7 +71,8 @@ class TerrainCell():
         regen_rate: float = None,
         burn_rate: float = None,
         burning: bool = False,
-        waterdropped: bool = False
+        waterdropped: bool = False,
+        burnt_period: int = 200 # of steps a cell remains burnt out
     ):
         self.type = type
         self.moisture_decay_rate = moisture_decay
@@ -85,30 +86,50 @@ class TerrainCell():
         self.burn_rate = burn_rate
         self.waterdropped = waterdropped
 
+        #burnt state tracking
+        self.burnt = False
+        self.burnt_timer = 0
+        self.burnt_period = burnt_period
+        self.burn_duration = 0
+
     def get_ignition_prob(self, ignition_source: TerrainType) -> float:
         return IGNITION_PROB_TABLE[ignition_source][self.type]
 
     def regenerate(self):
+        # If cell is in burnt state, age the burnt timer and only recover after period
+        if self.burnt:
+            self.burnt_timer += 1
+            if self.burnt_timer >= self.burnt_period:
+                # burnt period complete -> allow slow recovery
+                self.burnt = False
+                self.burnt_timer = 0
+                # give small residual fuel so regeneration can continue
+                self.fuel = min(0.1, self.fuel + 0.1)
+            return
+
         if self.type != TerrainType.TOWN and \
             self.type != TerrainType.LAKE and \
             self.type != TerrainType.SOURCE:
             if not self.burning:
-                self.fuel = min(1.0, self.fuel + self.regen_rate)
+                self.fuel = min(1.0, self.fuel + (self.regen_rate if self.regen_rate is not None else 0))
             self._strip_moisture()
 
     def ignite(self):
         match (self.type):
             case TerrainType.TOWN:
                 self.burning = True
+                self.burn_duration = 0
             case TerrainType.LAKE:
                 return
             case TerrainType.SOURCE:
                 self.burning = True
+                self.burn_duration = 0
             case _:
                 if self.moisture < self.burn_threshold:
                     if self.fuel >= self.burn_rate:
                         self.burning = True
                         self.fuel -= self.burn_rate
+                        self.burn_duration = 0
                     else:
                         self.fuel = 0.0
         
@@ -125,14 +146,21 @@ class TerrainCell():
         else:
             if self.fuel >= self.burn_rate:
                 self.fuel -= self.burn_rate
+                self.burn_duration += 1
             else:
+                # burning finished, enter burnt state
                 self.burning = False
                 self.fuel = 0.0
+                self.burnt = True
+                self.burnt_timer = 0
+                self.burn_duration = 0
 
             self._strip_moisture()
     
     def drop_water(self, max_moisture: float = 0.5):
         self.waterdropped = True
+        if self.burnt:
+            return # water drop has no effect on burnt cells
         match (self.type):
             case TerrainType.TOWN:
                 return
@@ -155,11 +183,13 @@ def cell_to_state_index(cell: TerrainCell) -> int:
     if cell is None or isinstance(cell, numbers.Integral):
         return -1 
 
-    base = (cell.type.value - 1) * 3
+    base = (cell.type.value - 1) * 4
 
     if cell.waterdropped:
         return base + 2
     elif cell.burning:
         return base + 1
+    elif cell.burnt:
+        return base + 3
     else:
         return base + 0

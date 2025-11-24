@@ -194,7 +194,7 @@ def setup(args, wind_direction):
     
     config.state_index_function = cell_to_state_index
 
-    config.states = list(range(len(TerrainType) * 3))
+    config.states = list(range(len(TerrainType) * 4))  # 4 states per terrain type
 
     def type_to_colour(type: TerrainType) -> str:
         color_map = {
@@ -213,9 +213,11 @@ def setup(args, wind_direction):
         base_rgb = colors.to_rgb(type_to_colour(terrain))
         fire_rgb = (1.0, 0.0, 0.0) 
         waterdrop_rgb = (0.0, 0.0, 1.0)
+        burnt_rgb = (0.2, 0.2, 0.2)
         state_colors.append(base_rgb)
         state_colors.append(fire_rgb)
         state_colors.append(waterdrop_rgb)
+        state_colors.append(burnt_rgb)
 
     config.state_colors = state_colors
 
