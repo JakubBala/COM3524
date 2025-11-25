@@ -66,10 +66,17 @@ class _ConfigFrame(tk.Frame):
         cb_frame.pack(anchor=tk.W)
         src_frame.pack(fill=tk.BOTH, pady=(6,0))
 
-        # refresh the frame and graph
-        self.update(self.ca_config, self.ca_graph)
+        #self.separator()
 
-        # self.separator()
+        cb_frame.pack(anchor=tk.W)
+        src_frame.pack(fill=tk.BOTH, pady=(6, 0))
+
+        #self.separator()
+
+        # Label to display when fire reaches town
+        self.town_ignition_label = tk.Label(self, text="Town ignited after step: —", 
+                                             fg="red", font=("Arial", 10, "bold"))
+        self.town_ignition_label.pack(anchor=tk.W, padx=0, pady=(4, 0))
         
         # initial grid config options
         # self.init_grid = _InitialGridUI(self, self.ca_config)
@@ -84,8 +91,6 @@ class _ConfigFrame(tk.Frame):
         # btn_open_json = tk.Button(self, text="Open waterdrops.json",
         #                   command=self.open_waterdrops)
         # btn_open_json.pack()
-
-        self.separator()
 
         # refresh the frame and graph
         self.update(self.ca_config, self.ca_graph)
@@ -194,6 +199,13 @@ class _ConfigFrame(tk.Frame):
         self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
         # self.init_grid.update_config(self.ca_config)
         # self.state_colors.update(self.ca_config, ca_graph)
+
+        # Update town ignition label
+        town_step = getattr(self.ca_config, "town_ignition_step", None)
+        if town_step is not None:
+            self.town_ignition_label.config(text=f"Town ignited at step: {town_step}")
+        else:
+            self.town_ignition_label.config(text="Town ignited at step: —")
 
     def open_waterdrops(self):
         """Open the JSON file one directory up."""

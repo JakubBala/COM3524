@@ -39,7 +39,8 @@ def transition_func(
     neighbour_counts, 
     wind_distribution: Wind, 
     water_dropping_plan=None,
-    step_num=0
+    step_num=0,
+    config = None
 ):
     
     rows, cols = grid.shape
@@ -98,10 +99,17 @@ def transition_func(
 
             elif water_mask[x, y]:
                 cell.drop_water()
-
+            
+            #do main cell actions
+            if cell.burnt:
+                continue
             elif cell.burning:
                 cell.burn()
             elif ignite_mask[x, y]:
+                # If town cell being ignited, record the step number
+                if cell.type == TerrainType.TOWN and not cell.burning:
+                    if config is not None and not hasattr(config, "town_ignition_step"):
+                        config.town_ignition_step = step_num
                 cell.ignite()
             else:
                 cell.regenerate()
@@ -249,7 +257,7 @@ def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
             water_plan = json.load(f)
 
     # Create grid object
-    grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_plan))
+    grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_plan, config=config))
 
     # Run the CA, save grid state every generation to timeline
     timeline = grid.run()

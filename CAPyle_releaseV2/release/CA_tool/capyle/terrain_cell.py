@@ -175,7 +175,7 @@ class TerrainCell():
             case _:
                 if self.burning:
                     self.burning = False
-                    self.moisture = min(self.moisture + 0.5 * max_moisture)
+                    self.moisture = min(self.moisture + 0.5 * max_moisture, max_moisture)
                 else:
                     self.moisture = max_moisture
             
