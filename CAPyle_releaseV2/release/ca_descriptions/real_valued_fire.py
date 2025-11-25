@@ -101,9 +101,7 @@ def transition_func(
                 cell.drop_water()
             
             #do main cell actions
-            if cell.burnt:
-                continue
-            elif cell.burning:
+            if cell.burning:
                 cell.burn()
             elif ignite_mask[x, y]:
                 # If town cell being ignited, record the step number
