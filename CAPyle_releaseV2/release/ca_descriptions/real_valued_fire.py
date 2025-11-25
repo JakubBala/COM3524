@@ -33,6 +33,11 @@ import numpy as np
 from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
 from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
 
+EDGE_W = 0.785398
+CORNER_W = 0.214601
+EDGE_W_N  = 1.0
+CORNER_W_N = CORNER_W / EDGE_W 
+
 def transition_func(
     grid, 
     neighbour_states, 
@@ -48,6 +53,17 @@ def transition_func(
     neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
                     (-1,0),           (1,0),
                     (-1,1),  (0,1),   (1,1)]
+    
+    neighbor_geom_weights = np.array([
+        CORNER_W_N,
+        EDGE_W_N,
+        CORNER_W_N,
+        EDGE_W_N,
+        EDGE_W_N,
+        CORNER_W_N,
+        EDGE_W_N,
+        CORNER_W_N
+    ])
 
     water_mask = np.zeros((rows, cols), dtype=bool)
     if water_dropping_plan is not None:
@@ -72,6 +88,7 @@ def transition_func(
                     neighbor = ns_array[x, y]
                     if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
                         dx, dy = neighbor_offsets[idx]
+                        geom_w = neighbor_geom_weights[idx]
 
                         ignition_prob = cell.base_ignition_prob
                         moisture_effect = math.exp(-0.014 * cell.moisture)
@@ -81,6 +98,7 @@ def transition_func(
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
                         prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect
+                        prob *= geom_w
                         prob = max(0.0, min(prob, 1.0))
 
                         if random.random() < prob:
