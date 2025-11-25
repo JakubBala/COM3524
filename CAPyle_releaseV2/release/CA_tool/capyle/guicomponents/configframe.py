@@ -66,10 +66,24 @@ class _ConfigFrame(tk.Frame):
         cb_frame.pack(anchor=tk.W)
         src_frame.pack(fill=tk.BOTH, pady=(6,0))
 
-        #self.separator()
+        self.separator()
 
-        cb_frame.pack(anchor=tk.W)
-        src_frame.pack(fill=tk.BOTH, pady=(6, 0))
+        # Intervention 1 checkbox
+        self.intervention1_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_1_enabled", False))
+        interv_frame = tk.Frame(self)
+        interv_label = tk.Label(interv_frame, text="Interventions:")
+        interv_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        interv_cb_frame = tk.Frame(interv_frame)
+        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="Intervention 1 - extended forest", variable=self.intervention1_var,
+                                     command=self._on_intervention_changed)
+        cb_interv1.pack(side=tk.LEFT, padx=4)
+
+        interv_cb_frame.pack(anchor=tk.W)
+        interv_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        # cb_frame.pack(anchor=tk.W)
+        # src_frame.pack(fill=tk.BOTH, pady=(6, 0))
 
         #self.separator()
 
@@ -104,6 +118,9 @@ class _ConfigFrame(tk.Frame):
         self.ca_config.power_plant_enabled = bool(self.powerplant_var.get())
         self.ca_config.incinerator_enabled = bool(self.incinerator_var.get())
 
+    def _on_intervention_changed(self):
+        self.ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
+
     def reset(self):
         """Reset all options to software defaults"""
         # if self.ca_config.dimensions == 2:
@@ -118,6 +135,7 @@ class _ConfigFrame(tk.Frame):
         ca_config.num_generations = self.generations_entry.get_value()
         ca_config.power_plant_enabled = bool(self.powerplant_var.get())
         ca_config.incinerator_enabled = bool(self.incinerator_var.get())
+        ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
 
         if ca_config.dimensions == 2:
             # ca_config.grid_dims = self.griddims_entry.get_value()
@@ -197,6 +215,7 @@ class _ConfigFrame(tk.Frame):
         # sync ignition source checkboxes
         self.powerplant_var.set(bool(getattr(self.ca_config, "power_plant_enabled", False)))
         self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
+        self.intervention1_var.set(bool(getattr(self.ca_config, "intervention_1_enabled", False)))
         # self.init_grid.update_config(self.ca_config)
         # self.state_colors.update(self.ca_config, ca_graph)
 

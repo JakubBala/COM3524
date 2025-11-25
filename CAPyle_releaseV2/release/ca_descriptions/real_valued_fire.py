@@ -50,18 +50,19 @@ def transition_func(
     neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
                     (-1,0),           (1,0),
                     (-1,1),  (0,1),   (1,1)]
+    
+    # determine water drops for this timestep (water_mask)
+    water_mask = None
+    if water_dropping_plan is not None and str(step_num) in water_dropping_plan:
+        water_mask = np.zeros((rows, cols), dtype=bool)
+        print(f"Step {step_num}: Water drops at coordinates:")
+        for (x, y) in water_dropping_plan[str(step_num)]:
+            x, y = int(x), int(y)
+            if 0 <= x < rows and 0 <= y < cols:
+                water_mask[x, y] = True
+                print(f"  ({x}, {y})")
 
-    water_mask = np.zeros((rows, cols), dtype=bool)
-    if water_dropping_plan is not None:
-        step_key = str(step_num)
-        if step_key in water_dropping_plan:
-            # print(f"Step {step_num}: Water drops at coordinates:")
-            for (x, y) in water_dropping_plan[step_key]:
-                x, y = int(x), int(y)
-                if 0 <= x < rows and 0 <= y < cols:
-                    water_mask[x, y] = True
-                    print(f"  ({x}, {y})")
-
+    # determine cell ignitions for this timestep (ignite_mask)
     for x in range(rows):
         for y in range(cols):
             cell = grid[x, y]
@@ -88,16 +89,16 @@ def transition_func(
                         if random.random() < prob:
                             ignite_mask[x, y] = True
                             break 
-
+    
+    # apply water mask and ignite mask to cells
     for x in range(rows):
         for y in range(cols):
             cell = grid[x, y]
 
-            # remove waterdropped effect after the dropping step
+            # remove waterdropped effect, check for drop at this timestep & square
             if(cell.waterdropped):
                 cell.waterdropped = False
-
-            elif water_mask[x, y]:
+            elif water_mask is not None and water_mask[x, y]:
                 cell.drop_water()
             
             #do main cell actions
@@ -190,10 +191,21 @@ def setup(args, wind_direction):
                 TerrainType.TOWN
             )
     
+    # add ignition sources if enabled
     if getattr(config, "power_plant_enabled", False):
         grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
     if getattr(config, "incinerator_enabled", False):
         grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
+
+    # add intervention 1 - extended forest (if enabled)
+    if getattr(config, "intervention_1_enabled", False):
+        for x in range(100, 140):
+            for y in range(0, 20):
+                grid[x,y] = TerrainCell(
+                    TerrainType.DENSE_FOREST,
+                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
+                    burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                )
 
     config.initial_grid = grid
     config.dtype = TerrainCell
