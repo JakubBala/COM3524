@@ -184,10 +184,10 @@ def setup(args, wind_direction):
                 TerrainType.TOWN
             )
     
-    grid[0,20] = TerrainCell(
-        TerrainType.SOURCE,
-        burning = True
-    )
+    if getattr(config, "power_plant_enabled", False):
+        grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
+    if getattr(config, "incinerator_enabled", False):
+        grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
 
     config.initial_grid = grid
     config.dtype = TerrainCell

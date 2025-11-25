@@ -44,6 +44,33 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
+        # Toggles for ignition sources (Power Plant / Incinerator)
+        # Use Checkbuttons so user can select one, both, or none.
+        # Keep state in BooleanVars and persist to ca_config in get_config().
+        self.powerplant_var = tk.BooleanVar(value=getattr(self.ca_config, "power_plant_enabled", False))
+        self.incinerator_var = tk.BooleanVar(value=getattr(self.ca_config, "incinerator_enabled", False))
+
+        src_frame = tk.Frame(self)
+        lbl = tk.Label(src_frame, text="Ignition sources:")
+        lbl.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        cb_frame = tk.Frame(src_frame)
+        cb_pp = tk.Checkbutton(src_frame, text="Power Plant", variable=self.powerplant_var,
+                               command=self._on_sources_changed)
+        cb_pp.pack(side=tk.LEFT, padx=4)
+
+        cb_inc = tk.Checkbutton(src_frame, text="Incinerator", variable=self.incinerator_var,
+                                command=self._on_sources_changed)
+        cb_inc.pack(side=tk.LEFT, padx=4)
+
+        cb_frame.pack(anchor=tk.W)
+        src_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        # refresh the frame and graph
+        self.update(self.ca_config, self.ca_graph)
+
+        # self.separator()
+        
         # initial grid config options
         # self.init_grid = _InitialGridUI(self, self.ca_config)
         # self.init_grid.pack(fill=tk.BOTH)
@@ -66,6 +93,11 @@ class _ConfigFrame(tk.Frame):
     def separator(self):
         """Generate a separator"""
         return _Separator(self).pack(fill=tk.BOTH, padx=5, pady=10)
+    
+    def _on_sources_changed(self):
+        # immediate persist to config so other parts of the UI/code can read it
+        self.ca_config.power_plant_enabled = bool(self.powerplant_var.get())
+        self.ca_config.incinerator_enabled = bool(self.incinerator_var.get())
 
     def reset(self):
         """Reset all options to software defaults"""
@@ -79,7 +111,8 @@ class _ConfigFrame(tk.Frame):
     def get_config(self, ca_config, validate=False):
         """Get the config from the UI and store in a CAConfig object"""
         ca_config.num_generations = self.generations_entry.get_value()
-        # ca_config.state_colors = self.state_colors.get_value()
+        ca_config.power_plant_enabled = bool(self.powerplant_var.get())
+        ca_config.incinerator_enabled = bool(self.incinerator_var.get())
 
         if ca_config.dimensions == 2:
             # ca_config.grid_dims = self.griddims_entry.get_value()
@@ -156,6 +189,9 @@ class _ConfigFrame(tk.Frame):
         #     self.rulenum_entry.set(ca_config.rule_num)
         self.nhood_select.set(self.ca_config.nhood_arr)
         self.generations_entry.set(self.ca_config.num_generations)
+        # sync ignition source checkboxes
+        self.powerplant_var.set(bool(getattr(self.ca_config, "power_plant_enabled", False)))
+        self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
         # self.init_grid.update_config(self.ca_config)
         # self.state_colors.update(self.ca_config, ca_graph)
 
