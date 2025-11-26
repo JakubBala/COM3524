@@ -64,22 +64,22 @@ def transition_func(
         CORNER_W_N
     ])
 
-    water_mask = np.zeros((rows, cols), dtype=bool)
-    if water_dropping_plan is not None:
-        step_key = str(time_step)
-        if step_key in water_dropping_plan:
-            # print(f"Step {step_num}: Water drops at coordinates:")
-            for (x, y) in water_dropping_plan[step_key]:
-                x, y = int(x), int(y)
-                if 0 <= x < rows and 0 <= y < cols:
-                    water_mask[x, y] = True
-                    print(f"  ({x}, {y})")
+    water_mask = None
+    if water_dropping_plan is not None and str(time_step) in water_dropping_plan:
+        water_mask = np.zeros((rows, cols), dtype=bool)
+        print(f"Step {time_step}: Water drops at coordinates:")
+        for (x, y) in water_dropping_plan[str(time_step)]:
+            x, y = int(x), int(y)
+            if 0 <= x < rows and 0 <= y < cols:
+                water_mask[x, y] = True
+                print(f"  ({x}, {y})")
 
+    # determine cell ignitions for this timestep (ignite_mask)
     for x in range(rows):
         for y in range(cols):
             cell = grid[x, y]
 
-            if cell.burning:
+            if cell.burning or cell.burnt:
                 continue
 
             for idx, ns_array in enumerate(neighbour_states):
@@ -89,7 +89,8 @@ def transition_func(
                         dx, dy = neighbor_offsets[idx]
                         geom_w = neighbor_geom_weights[idx]
 
-                        ignition_prob = cell.base_ignition_prob
+                        ignition_source = neighbor.type
+                        ignition_prob = cell.get_ignition_prob(ignition_source)
                         moisture_effect = math.exp(-0.014 * cell.moisture)
 
                         fire_dir = (math.degrees(math.atan2(dy, dx)) - 270 + 360) % 360
@@ -103,22 +104,25 @@ def transition_func(
                         if random.random() < prob:
                             ignite_mask[x, y] = True
                             break 
-
+    
+    # apply water mask and ignite mask to cells
     town_ignited = False
     for x in range(rows):
         for y in range(cols):
             cell = grid[x, y]
 
-            # remove waterdropped effect after the dropping step
+            # remove waterdropped effect, check for drop at this timestep & square
             if(cell.waterdropped):
                 cell.waterdropped = False
-
-            elif water_mask[x, y]:
+            elif water_mask is not None and water_mask[x, y]:
                 cell.drop_water()
-
-            elif cell.burning:
+            
+            #do main cell actions
+            if cell.burning:
                 cell.burn()
             elif ignite_mask[x, y]:
+                if cell.type == TerrainType.TOWN and not cell.burning:
+                    town_ignited = True
                 cell.ignite()
             else:
                 cell.regenerate()
@@ -201,17 +205,28 @@ def setup(args, wind_direction):
                 TerrainType.TOWN
             )
     
-    grid[0,20] = TerrainCell(
-        TerrainType.SOURCE,
-        burning = True
-    )
+    # add ignition sources if enabled
+    if getattr(config, "power_plant_enabled", False):
+        grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
+    if getattr(config, "incinerator_enabled", False):
+        grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
+
+    # add intervention 1 - extended forest (if enabled)
+    if getattr(config, "intervention_1_enabled", False):
+        for x in range(100, 140):
+            for y in range(0, 20):
+                grid[x,y] = TerrainCell(
+                    TerrainType.DENSE_FOREST,
+                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
+                    burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                )
 
     config.initial_grid = grid
     config.dtype = TerrainCell
     
     config.state_index_function = cell_to_state_index
 
-    config.states = list(range(len(TerrainType) * 3))
+    config.states = list(range(len(TerrainType) * 4))  # 4 states per terrain type
 
     def type_to_colour(type: TerrainType) -> str:
         color_map = {
@@ -230,9 +245,11 @@ def setup(args, wind_direction):
         base_rgb = colors.to_rgb(type_to_colour(terrain))
         fire_rgb = (1.0, 0.0, 0.0) 
         waterdrop_rgb = (0.0, 0.0, 1.0)
+        burnt_rgb = (0.2, 0.2, 0.2)
         state_colors.append(base_rgb)
         state_colors.append(fire_rgb)
         state_colors.append(waterdrop_rgb)
+        state_colors.append(burnt_rgb)
 
     config.state_colors = state_colors
 

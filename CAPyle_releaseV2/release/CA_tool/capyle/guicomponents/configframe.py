@@ -44,6 +44,54 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
+        # Toggles for ignition sources (Power Plant / Incinerator)
+        # Use Checkbuttons so user can select one, both, or none.
+        # Keep state in BooleanVars and persist to ca_config in get_config().
+        self.powerplant_var = tk.BooleanVar(value=getattr(self.ca_config, "power_plant_enabled", False))
+        self.incinerator_var = tk.BooleanVar(value=getattr(self.ca_config, "incinerator_enabled", False))
+
+        src_frame = tk.Frame(self)
+        lbl = tk.Label(src_frame, text="Ignition sources:")
+        lbl.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        cb_frame = tk.Frame(src_frame)
+        cb_pp = tk.Checkbutton(src_frame, text="Power Plant", variable=self.powerplant_var,
+                               command=self._on_sources_changed)
+        cb_pp.pack(side=tk.LEFT, padx=4)
+
+        cb_inc = tk.Checkbutton(src_frame, text="Incinerator", variable=self.incinerator_var,
+                                command=self._on_sources_changed)
+        cb_inc.pack(side=tk.LEFT, padx=4)
+
+        cb_frame.pack(anchor=tk.W)
+        src_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        self.separator()
+
+        # Intervention 1 checkbox
+        self.intervention1_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_1_enabled", False))
+        interv_frame = tk.Frame(self)
+        interv_label = tk.Label(interv_frame, text="Interventions:")
+        interv_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        interv_cb_frame = tk.Frame(interv_frame)
+        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="Intervention 1 - extended forest", variable=self.intervention1_var,
+                                     command=self._on_intervention_changed)
+        cb_interv1.pack(side=tk.LEFT, padx=4)
+
+        interv_cb_frame.pack(anchor=tk.W)
+        interv_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        # cb_frame.pack(anchor=tk.W)
+        # src_frame.pack(fill=tk.BOTH, pady=(6, 0))
+
+        #self.separator()
+
+        # Label to display when fire reaches town
+        self.town_ignition_label = tk.Label(self, text="Town ignited after step: —", 
+                                             fg="red", font=("Arial", 10, "bold"))
+        self.town_ignition_label.pack(anchor=tk.W, padx=0, pady=(4, 0))
+        
         # initial grid config options
         # self.init_grid = _InitialGridUI(self, self.ca_config)
         # self.init_grid.pack(fill=tk.BOTH)
@@ -58,14 +106,20 @@ class _ConfigFrame(tk.Frame):
         #                   command=self.open_waterdrops)
         # btn_open_json.pack()
 
-        self.separator()
-
         # refresh the frame and graph
         self.update(self.ca_config, self.ca_graph)
 
     def separator(self):
         """Generate a separator"""
         return _Separator(self).pack(fill=tk.BOTH, padx=5, pady=10)
+    
+    def _on_sources_changed(self):
+        # immediate persist to config so other parts of the UI/code can read it
+        self.ca_config.power_plant_enabled = bool(self.powerplant_var.get())
+        self.ca_config.incinerator_enabled = bool(self.incinerator_var.get())
+
+    def _on_intervention_changed(self):
+        self.ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
 
     def reset(self):
         """Reset all options to software defaults"""
@@ -79,7 +133,9 @@ class _ConfigFrame(tk.Frame):
     def get_config(self, ca_config, validate=False):
         """Get the config from the UI and store in a CAConfig object"""
         ca_config.num_generations = self.generations_entry.get_value()
-        # ca_config.state_colors = self.state_colors.get_value()
+        ca_config.power_plant_enabled = bool(self.powerplant_var.get())
+        ca_config.incinerator_enabled = bool(self.incinerator_var.get())
+        ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
 
         if ca_config.dimensions == 2:
             # ca_config.grid_dims = self.griddims_entry.get_value()
@@ -156,8 +212,19 @@ class _ConfigFrame(tk.Frame):
         #     self.rulenum_entry.set(ca_config.rule_num)
         self.nhood_select.set(self.ca_config.nhood_arr)
         self.generations_entry.set(self.ca_config.num_generations)
+        # sync ignition source checkboxes
+        self.powerplant_var.set(bool(getattr(self.ca_config, "power_plant_enabled", False)))
+        self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
+        self.intervention1_var.set(bool(getattr(self.ca_config, "intervention_1_enabled", False)))
         # self.init_grid.update_config(self.ca_config)
         # self.state_colors.update(self.ca_config, ca_graph)
+
+        # Update town ignition label
+        town_step = getattr(self.ca_config, "town_ignition_step", None)
+        if town_step is not None:
+            self.town_ignition_label.config(text=f"Town ignited at step: {town_step}")
+        else:
+            self.town_ignition_label.config(text="Town ignited at step: —")
 
     def open_waterdrops(self):
         """Open the JSON file one directory up."""

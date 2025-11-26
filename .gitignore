@@ -2,3 +2,5 @@
 
 #all pycache files and subfolders
 __pycache__/
+**/temp/
+CAPyle_releaseV2/release/temp/
