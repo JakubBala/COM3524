@@ -43,17 +43,19 @@ def transition_func(
     neighbour_counts, 
     time_step,
     wind_distribution: Wind, 
-    water_dropping_plan=None
+    water_dropping_plan=None,
+    config=None
 ):
+    new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
 
-    ignite_mask = np.zeros_like(grid, dtype=bool)
-
-    neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
-                    (-1,0),           (1,0),
-                    (-1,1),  (0,1),   (1,1)]
+    neighbour_offsets = [
+        (-1,-1), (0,-1), (1,-1),
+        (-1,0),           (1,0),
+        (-1,1),  (0,1),   (1,1)
+    ]
     
-    neighbor_geom_weights = np.array([
+    neighbour_geom_weights = np.array([
         CORNER_W_N,
         EDGE_W_N,
         CORNER_W_N,
@@ -64,34 +66,30 @@ def transition_func(
         CORNER_W_N
     ])
 
-    water_mask = None
-    if water_dropping_plan is not None and str(time_step) in water_dropping_plan:
-        water_mask = np.zeros((rows, cols), dtype=bool)
-        print(f"Step {time_step}: Water drops at coordinates:")
-        for (x, y) in water_dropping_plan[str(time_step)]:
-            x, y = int(x), int(y)
-            if 0 <= x < rows and 0 <= y < cols:
-                water_mask[x, y] = True
-                print(f"  ({x}, {y})")
+    drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
 
-    # determine cell ignitions for this timestep (ignite_mask)
+    town_ignited = False
     for x in range(rows):
         for y in range(cols):
-            cell = grid[x, y]
+            old_cell = grid[x, y]
+            new_cell = old_cell.copy()
 
-            if cell.burning or cell.burnt:
-                continue
+            if (x, y) in drops:
+                new_cell.drop_water()
+            elif old_cell.waterdropped:
+                new_cell.waterdropped = False
 
-            for idx, ns_array in enumerate(neighbour_states):
-                if x < ns_array.shape[0] and y < ns_array.shape[1]:
-                    neighbor = ns_array[x, y]
-                    if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
-                        dx, dy = neighbor_offsets[idx]
-                        geom_w = neighbor_geom_weights[idx]
+            if not old_cell.burning and not old_cell.burnt:
+                for idx, ns_array in enumerate(neighbour_states):
+                    neighbour = ns_array[x, y]
+                    # Always integral?
+                    if neighbour is not None and not isinstance(neighbour, numbers.Integral) and neighbour.burning:
+                        dx, dy = neighbour_offsets[idx]
+                        geom_w = neighbour_geom_weights[idx]
 
-                        ignition_source = neighbor.type
-                        ignition_prob = cell.get_ignition_prob(ignition_source)
-                        moisture_effect = math.exp(-0.014 * cell.moisture)
+                        ignition_source = neighbour.type
+                        ignition_prob = old_cell.get_ignition_prob(ignition_source)
+                        moisture_effect = math.exp(-0.014 * old_cell.moisture)
 
                         fire_dir = (math.degrees(math.atan2(dy, dx)) - 270 + 360) % 360
 
@@ -102,32 +100,21 @@ def transition_func(
                         prob = max(0.0, min(prob, 1.0))
 
                         if random.random() < prob:
-                            ignite_mask[x, y] = True
+                            new_cell.ignite()
+                            if new_cell.type == TerrainType.TOWN:
+                                town_ignited = True
+                                if config is not None and not hasattr(config, "town_ignition_step"):
+                                    config.town_ignition_step = time_step
                             break 
-    
-    # apply water mask and ignite mask to cells
-    town_ignited = False
-    for x in range(rows):
-        for y in range(cols):
-            cell = grid[x, y]
-
-            # remove waterdropped effect, check for drop at this timestep & square
-            if(cell.waterdropped):
-                cell.waterdropped = False
-            elif water_mask is not None and water_mask[x, y]:
-                cell.drop_water()
             
-            #do main cell actions
-            if cell.burning:
-                cell.burn()
-            elif ignite_mask[x, y]:
-                if cell.type == TerrainType.TOWN and not cell.burning:
-                    town_ignited = True
-                cell.ignite()
+            if old_cell.burning:
+                new_cell.burn()
             else:
-                cell.regenerate()
+                new_cell.regenerate()
 
-    return grid, town_ignited
+            new_grid[x, y] = new_cell
+
+    return new_grid, town_ignited
 
 def setup(args, wind_direction):
     config_path = args[0]
@@ -287,7 +274,8 @@ def main(
         partial(
             transition_func, 
             wind_distribution=wind, 
-            water_dropping_plan=water_dropping_plan
+            water_dropping_plan=water_dropping_plan,
+            config=config
         )
     )
 

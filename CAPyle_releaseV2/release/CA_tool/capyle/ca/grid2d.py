@@ -179,10 +179,12 @@ class Grid2D(Grid):
         # passing in the states and counts to allow complex rules
         # if the user supplied any addition arguments, pass them here
         if self.additional_args is None:
-            self.grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step)
+            new_grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step)
         else:
-            self.grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step,
+            new_grid, stopping_condition = self.transition_func(self.grid, ns, nc, self.time_step,
                                              *self.additional_args)
+            
+        self.grid[:, :] = new_grid
         # refresh wrapping border
         self.refresh_wrap()
         
