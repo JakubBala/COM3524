@@ -183,6 +183,26 @@ class TerrainCell():
         multiplier = 0.5 if not self.burning else 1
         self.moisture = max(0, self.moisture - multiplier * self.moisture_decay_rate)
 
+    def copy(self):
+        new_cell = TerrainCell(
+            type=self.type,
+            moisture_decay=self.moisture_decay_rate,
+            burn_threshold=self.burn_threshold,
+            regen_rate=self.regen_rate,
+            burn_rate=self.burn_rate,
+            burning=self.burning,
+            burnt=self.burnt,
+            waterdropped=self.waterdropped,
+            burnt_period=self.burnt_period
+        )
+        
+        new_cell.fuel = self.fuel
+        new_cell.moisture = self.moisture
+        new_cell.burnt_timer = self.burnt_timer
+        new_cell.burn_duration = self.burn_duration
+
+        return new_cell
+
 def cell_to_state_index(cell: TerrainCell) -> int:
     if cell is None or isinstance(cell, numbers.Integral):
         return -1 

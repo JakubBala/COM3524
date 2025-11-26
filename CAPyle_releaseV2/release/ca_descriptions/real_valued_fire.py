@@ -24,96 +24,97 @@ water_json_path = os.path.join(
     os.path.dirname(capyle_module.__file__),
     "waterdrops.json"
 )
-# ---
 
 from matplotlib import colors
 from CA_tool.capyle.ca import Grid2D
 import CA_tool.capyle.utils as utils
 import numpy as np
-from CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
-from CA_tool.capyle.wind import Wind
+from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
+from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
+
+EDGE_W = 0.785398
+CORNER_W = 0.214601
+EDGE_W_N  = 1.0
+CORNER_W_N = CORNER_W / EDGE_W 
 
 def transition_func(
     grid, 
     neighbour_states, 
     neighbour_counts, 
+    time_step,
     wind_distribution: Wind, 
     water_dropping_plan=None,
-    step_num=0,
-    config = None
+    config=None
 ):
-    
+    new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
 
-    ignite_mask = np.zeros_like(grid, dtype=bool)
-
-    neighbor_offsets = [(-1,-1), (0,-1), (1,-1),
-                    (-1,0),           (1,0),
-                    (-1,1),  (0,1),   (1,1)]
+    neighbour_offsets = [
+        (-1,-1), (0,-1), (1,-1),
+        (-1,0),           (1,0),
+        (-1,1),  (0,1),   (1,1)
+    ]
     
-    # determine water drops for this timestep (water_mask)
-    water_mask = None
-    if water_dropping_plan is not None and str(step_num) in water_dropping_plan:
-        water_mask = np.zeros((rows, cols), dtype=bool)
-        print(f"Step {step_num}: Water drops at coordinates:")
-        for (x, y) in water_dropping_plan[str(step_num)]:
-            x, y = int(x), int(y)
-            if 0 <= x < rows and 0 <= y < cols:
-                water_mask[x, y] = True
-                print(f"  ({x}, {y})")
+    neighbour_geom_weights = np.array([
+        CORNER_W_N,
+        EDGE_W_N,
+        CORNER_W_N,
+        EDGE_W_N,
+        EDGE_W_N,
+        CORNER_W_N,
+        EDGE_W_N,
+        CORNER_W_N
+    ])
 
-    # determine cell ignitions for this timestep (ignite_mask)
+    drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
+
+    town_ignited = False
     for x in range(rows):
         for y in range(cols):
-            cell = grid[x, y]
+            old_cell = grid[x, y]
+            new_cell = old_cell.copy()
 
-            if cell.burning or cell.burnt:
-                continue
+            if (x, y) in drops:
+                new_cell.drop_water()
+            elif old_cell.waterdropped:
+                new_cell.waterdropped = False
 
-            for idx, ns_array in enumerate(neighbour_states):
-                if x < ns_array.shape[0] and y < ns_array.shape[1]:
-                    neighbor = ns_array[x, y]
-                    if neighbor is not None and not isinstance(neighbor, numbers.Integral) and neighbor.burning:
-                        dx, dy = neighbor_offsets[idx]
+            if not old_cell.burning and not old_cell.burnt:
+                for idx, ns_array in enumerate(neighbour_states):
+                    neighbour = ns_array[x, y]
+                    # Always integral?
+                    if neighbour is not None and not isinstance(neighbour, numbers.Integral) and neighbour.burning:
+                        dx, dy = neighbour_offsets[idx]
+                        geom_w = neighbour_geom_weights[idx]
 
-                        ignition_source = neighbor.type
-                        ignition_prob = cell.get_ignition_prob(ignition_source)
-                        moisture_effect = math.exp(-0.014 * cell.moisture)
+                        ignition_source = neighbour.type
+                        ignition_prob = old_cell.get_ignition_prob(ignition_source)
+                        moisture_effect = math.exp(-0.014 * old_cell.moisture)
 
                         fire_dir = (math.degrees(math.atan2(dy, dx)) - 270 + 360) % 360
+
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
                         prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect
+                        prob *= geom_w
                         prob = max(0.0, min(prob, 1.0))
 
                         if random.random() < prob:
-                            ignite_mask[x, y] = True
+                            new_cell.ignite()
+                            if new_cell.type == TerrainType.TOWN:
+                                town_ignited = True
+                                if config is not None and not hasattr(config, "town_ignition_step"):
+                                    config.town_ignition_step = time_step
                             break 
-    
-    # apply water mask and ignite mask to cells
-    for x in range(rows):
-        for y in range(cols):
-            cell = grid[x, y]
-
-            # remove waterdropped effect, check for drop at this timestep & square
-            if(cell.waterdropped):
-                cell.waterdropped = False
-            elif water_mask is not None and water_mask[x, y]:
-                cell.drop_water()
             
-            #do main cell actions
-            if cell.burning:
-                cell.burn()
-            elif ignite_mask[x, y]:
-                # If town cell being ignited, record the step number
-                if cell.type == TerrainType.TOWN and not cell.burning:
-                    if config is not None and not hasattr(config, "town_ignition_step"):
-                        config.town_ignition_step = step_num
-                cell.ignite()
+            if old_cell.burning:
+                new_cell.burn()
             else:
-                cell.regenerate()
+                new_cell.regenerate()
 
-    return grid
+            new_grid[x, y] = new_cell
+
+    return new_grid, town_ignited
 
 def setup(args, wind_direction):
     config_path = args[0]
@@ -250,27 +251,37 @@ def setup(args, wind_direction):
     return config
 
 
-def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
+def main(
+    wind_speed = 13.892, 
+    direction = 0, 
+    k = 37.284, 
+    c = 14.778,
+    water_plan_path = None,
+    water_dropping_plan = None
+):
     # Open the config object
     config = setup(sys.argv[1:], direction)
 
     wind = Wind(wind_speed, direction, k, c)
-
-    #--- LOAD WATER PLAN JSON---
-
-    load_water_plan = True
     
-    water_plan = None
-
-    if(load_water_plan):
-        with open(water_json_path, "r") as f:
-            water_plan = json.load(f)
+    if water_plan_path is not None and water_dropping_plan is None:
+        with open(water_plan_path, "r") as f:
+            water_dropping_plan = json.load(f)
 
     # Create grid object
-    grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_plan, config=config))
+    grid = Grid2D(
+        config, 
+        partial(
+            transition_func, 
+            wind_distribution=wind, 
+            water_dropping_plan=water_dropping_plan,
+            config=config
+        )
+    )
 
     # Run the CA, save grid state every generation to timeline
-    timeline = grid.run()
+    timeline, time_step = grid.run()
+    print(f"Stopping Condition met at time {time_step}")
 
     # save updated config to file
     config.save()
@@ -279,4 +290,4 @@ def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
 
 
 if __name__ == "__main__":
-    main()
+    main(water_plan_path=water_json_path)

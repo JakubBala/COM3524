@@ -21,11 +21,12 @@ echo Running app on http://127.0.0.1:5000 ...
 docker run -it --rm ^
     --name %CONTAINER_NAME% ^
     -e DISPLAY=%DISPLAY% ^
+    -e PYTHONPATH=/src ^
     -p 5000:5000 ^
-    -v ./CAPyle_releaseV2:/src/CAPyle_releaseV2 ^
-    -v ./run_tool.py:/src/run_tool.py ^
-    -v ./test_tool.py:/src/test_tool.py ^
-    -v ./water_dropping_ea.py:/src/water_dropping_ea.py ^
+    -v "%cd%\CAPyle_releaseV2":/src/CAPyle_releaseV2 ^
+    -v "%cd%\run_tool.py":/src/run_tool.py ^
+    -v "%cd%\test_tool.py":/src/test_tool.py ^
+    -v "%cd%\water_dropping_ea.py":/src/water_dropping_ea.py ^
     %IMAGE_NAME% ^
     python3 -m run_tool
 
