@@ -24,7 +24,6 @@ water_json_path = os.path.join(
     os.path.dirname(capyle_module.__file__),
     "waterdrops.json"
 )
-# ---
 
 from matplotlib import colors
 from CA_tool.capyle.ca import Grid2D
@@ -248,24 +247,32 @@ def setup(args, wind_direction):
     return config
 
 
-def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
+def main(
+    wind_speed = 13.892, 
+    direction = 0, 
+    k = 37.284, 
+    c = 14.778,
+    water_plan_path = None,
+    water_dropping_plan = None
+):
     # Open the config object
     config = setup(sys.argv[1:], direction)
 
     wind = Wind(wind_speed, direction, k, c)
-
-    #--- LOAD WATER PLAN JSON---
-
-    load_water_plan = True
     
-    water_plan = None
-
-    if(load_water_plan):
-        with open(water_json_path, "r") as f:
-            water_plan = json.load(f)
+    if water_plan_path is not None and water_dropping_plan is None:
+        with open(water_plan_path, "r") as f:
+            water_dropping_plan = json.load(f)
 
     # Create grid object
-    grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_plan))
+    grid = Grid2D(
+        config, 
+        partial(
+            transition_func, 
+            wind_distribution=wind, 
+            water_dropping_plan=water_dropping_plan
+        )
+    )
 
     # Run the CA, save grid state every generation to timeline
     timeline, time_step = grid.run()
@@ -278,4 +285,4 @@ def main(wind_speed = 13.892, direction = 0, k = 37.284, c = 14.778):
 
 
 if __name__ == "__main__":
-    main()
+    main(water_plan_path=water_json_path)
