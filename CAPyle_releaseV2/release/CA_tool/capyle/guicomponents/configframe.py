@@ -39,10 +39,11 @@ class _ConfigFrame(tk.Frame):
         self.separator()
 
         # Neighbourhood selector gui
+        # Removed as we hard code this ourselves.
         self.nhood_select = _NeighbourhoodUI(self, self.ca_config.dimensions)
-        self.nhood_select.pack(fill=tk.BOTH)
+        #self.nhood_select.pack(fill=tk.BOTH)
 
-        self.separator()
+        #self.separator()
 
         # Toggles for ignition sources (Power Plant / Incinerator)
         # Use Checkbuttons so user can select one, both, or none.
@@ -68,27 +69,50 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
-        # Intervention 1 checkbox
+        # Interventions checkbox
         self.intervention1_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_1_enabled", False))
+        self.intervention2_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_2_enabled", False))
+        self.intervention3_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_3_enabled", False))
         interv_frame = tk.Frame(self)
         interv_label = tk.Label(interv_frame, text="Interventions:")
         interv_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
 
         interv_cb_frame = tk.Frame(interv_frame)
-        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="Intervention 1 - extended forest", variable=self.intervention1_var,
+        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="1. Left-Extended Forest", variable=self.intervention1_var,
                                      command=self._on_intervention_changed)
-        cb_interv1.pack(side=tk.LEFT, padx=4)
+        cb_interv1.pack(anchor=tk.W, padx=4)
+
+        cb_interv2 = tk.Checkbutton(interv_cb_frame, text="2. Down-Extended Forest", variable=self.intervention2_var,
+                                     command=self._on_intervention_changed)
+        cb_interv2.pack(anchor=tk.W, padx=4)
+
+        cb_interv3 = tk.Checkbutton(interv_cb_frame, text="3. Flood Canyon", variable=self.intervention3_var,
+                                     command=self._on_intervention_changed)
+        cb_interv3.pack(anchor=tk.W, padx=4)
 
         interv_cb_frame.pack(anchor=tk.W)
         interv_frame.pack(fill=tk.BOTH, pady=(6,0))
 
-        # cb_frame.pack(anchor=tk.W)
-        # src_frame.pack(fill=tk.BOTH, pady=(6, 0))
+        self.separator()
 
-        #self.separator()
+        # Regrowth simulation checkbox
+        self.run_regrow = tk.BooleanVar(value=getattr(self.ca_config, "run_regrow", False))
+        regrow_frame = tk.Frame(self)
+        regrow_label = tk.Label(regrow_frame, text="Run Regrowth Simulation \n (overrides ignition source toggles):")
+        regrow_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        regrow_cb_frame = tk.Frame(regrow_frame)
+        cb_regrow = tk.Checkbutton(regrow_cb_frame, text="Run Regrowth", variable=self.run_regrow,
+                                     command=self._on_regrow_changed)
+        cb_regrow.pack(anchor=tk.W, padx=4)
+
+        regrow_cb_frame.pack(anchor=tk.W)
+        regrow_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        self.separator()
 
         # Label to display when fire reaches town
-        self.town_ignition_label = tk.Label(self, text="Town ignited after step: —", 
+        self.town_ignition_label = tk.Label(self, text="Town ignited at step: —", 
                                              fg="red", font=("Arial", 10, "bold"))
         self.town_ignition_label.pack(anchor=tk.W, padx=0, pady=(4, 0))
         
@@ -120,6 +144,11 @@ class _ConfigFrame(tk.Frame):
 
     def _on_intervention_changed(self):
         self.ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
+        self.ca_config.intervention_2_enabled = bool(self.intervention2_var.get())
+        self.ca_config.intervention_3_enabled = bool(self.intervention3_var.get())
+
+    def _on_regrow_changed(self):
+        self.ca_config.run_regrow = bool(self.run_regrow.get())
 
     def reset(self):
         """Reset all options to software defaults"""
@@ -129,6 +158,7 @@ class _ConfigFrame(tk.Frame):
         #     self.rulenum_entry.set_default()
         self.generations_entry.set_default()
         self.nhood_select.set_default()
+        self.town_step = None
 
     def get_config(self, ca_config, validate=False):
         """Get the config from the UI and store in a CAConfig object"""
@@ -136,6 +166,9 @@ class _ConfigFrame(tk.Frame):
         ca_config.power_plant_enabled = bool(self.powerplant_var.get())
         ca_config.incinerator_enabled = bool(self.incinerator_var.get())
         ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
+        ca_config.intervention_2_enabled = bool(self.intervention2_var.get())
+        ca_config.intervention_3_enabled = bool(self.intervention3_var.get())
+        ca_config.run_regrow = bool(self.run_regrow.get())
 
         if ca_config.dimensions == 2:
             # ca_config.grid_dims = self.griddims_entry.get_value()
@@ -216,6 +249,9 @@ class _ConfigFrame(tk.Frame):
         self.powerplant_var.set(bool(getattr(self.ca_config, "power_plant_enabled", False)))
         self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
         self.intervention1_var.set(bool(getattr(self.ca_config, "intervention_1_enabled", False)))
+        self.intervention2_var.set(bool(getattr(self.ca_config, "intervention_2_enabled", False)))
+        self.intervention3_var.set(bool(getattr(self.ca_config, "intervention_3_enabled", False)))
+        self.run_regrow.set(bool(getattr(self.ca_config, "run_regrow", False)))
         # self.init_grid.update_config(self.ca_config)
         # self.state_colors.update(self.ca_config, ca_graph)
 

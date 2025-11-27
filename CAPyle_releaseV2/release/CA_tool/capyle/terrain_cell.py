@@ -75,7 +75,7 @@ class TerrainCell():
         burning: bool = False,
         burnt: bool = False,
         waterdropped: bool = False,
-        burnt_period: int = 500 # of steps a cell remains burnt out
+        burnt_period: int = 15 # of steps a cell remains burnt out
     ):
         self.type = type
         self.moisture_decay_rate = moisture_decay
