@@ -63,6 +63,18 @@ IGNITION_PROB_TABLE = {
     },
 }
 
+REGEN_RATE_TABLE = {
+    TerrainType.CHAPARRAL:random.random() * (1/2880 - 1/5760) + 1/5760,
+    TerrainType.CANYON_SCRUBLAND:random.random() * (1/720 - 1/1440) + 1/1440,
+    TerrainType.DENSE_FOREST:random.random() * (1/8640 - 1/12960) + 1/12960
+}
+
+BURN_RATE_TABLE = {
+    TerrainType.CHAPARRAL:random.random() * (1/24 - 1/168) + 1/168,
+    TerrainType.CANYON_SCRUBLAND:random.random() * (1/6 - 1/12) + 1/12,
+    TerrainType.DENSE_FOREST:random.random() * (1/480 - 1/720) + 1/720
+}
+
 class TerrainCell():
     def __init__(
         self, 
@@ -75,7 +87,6 @@ class TerrainCell():
         burning: bool = False,
         burnt: bool = False,
         waterdropped: bool = False,
-        burnt_period: int = 15 # of steps a cell remains burnt out
     ):
         self.type = type
         self.moisture_decay_rate = moisture_decay
@@ -86,31 +97,20 @@ class TerrainCell():
         self.moisture = 0.0
 
         self.burning = burning
-        self.regen_rate = regen_rate
-        self.burn_rate = burn_rate
+        #set burn and regen rates if not passed in
+        self.regen_rate = REGEN_RATE_TABLE.get(self.type, None) if regen_rate is None else regen_rate
+        self.burn_rate = BURN_RATE_TABLE.get(self.type, None) if burn_rate is None else burn_rate
         self.waterdropped = waterdropped
 
         #burnt state tracking
         self.burnt = burnt
         self.burnt_timer = 0
-        self.burnt_period = burnt_period
         self.burn_duration = 0
 
     def get_ignition_prob(self, ignition_source: TerrainType) -> float:
         return IGNITION_PROB_TABLE[ignition_source][self.type]
 
     def regenerate(self):
-        # If cell is in burnt state, age the burnt timer and only recover after period
-        if self.burnt:
-            self.burnt_timer += 1
-            if self.burnt_timer >= self.burnt_period:
-                # burnt period complete -> allow slow recovery
-                self.burnt = False
-                self.burnt_timer = 0
-                # give small residual fuel so regeneration can continue
-                self.fuel = min(0.1, self.fuel + 0.1)
-            return
-
         if self.type != TerrainType.TOWN and \
             self.type != TerrainType.LAKE and \
             self.type != TerrainType.SOURCE:
@@ -211,8 +211,7 @@ class TerrainCell():
             burn_rate=self.burn_rate,
             burning=self.burning,
             burnt=self.burnt,
-            waterdropped=self.waterdropped,
-            burnt_period=self.burnt_period
+            waterdropped=self.waterdropped
         )
         
         new_cell.fuel = self.fuel

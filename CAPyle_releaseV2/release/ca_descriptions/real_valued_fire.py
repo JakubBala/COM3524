@@ -45,7 +45,6 @@ def transition_func(
     wind_distribution: Wind, 
     water_dropping_plan=None,
     config=None,
-    regrowing: bool = False
 ):
     new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
@@ -57,9 +56,6 @@ def transition_func(
     ]
 
     drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
-
-    # determine if we're running the regrowth sim or not. TO-DO: different transition function for regrowth sim?
-    regrowing = getattr(config, "run_regrow", False)
 
     town_ignited = False
     for x in range(rows):
@@ -104,8 +100,6 @@ def transition_func(
             
             if old_cell.burning:
                 new_cell.burn()
-            elif regrowing:
-                new_cell.regenerate()
 
             new_grid[x, y] = new_cell
 
@@ -139,8 +133,6 @@ def setup(args, wind_direction):
         for y in range(0,200):
             grid[x,y] = TerrainCell(
                 TerrainType.CHAPARRAL,
-                regen_rate=random.random() * (1/2880 - 1/5760) + 1/5760,
-                burn_rate=random.random() * (1/24 - 1/168) + 1/168,
                 burnt = cells_burnt
             )
 
@@ -149,8 +141,6 @@ def setup(args, wind_direction):
         for y in range(20,80):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
     
@@ -159,8 +149,6 @@ def setup(args, wind_direction):
         for y in range(20,50):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
 
@@ -169,8 +157,6 @@ def setup(args, wind_direction):
         for y in range(20,100):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
 
@@ -205,8 +191,6 @@ def setup(args, wind_direction):
         for y in range(140,150):
             grid[x,y] = TerrainCell(
                 TerrainType.CANYON_SCRUBLAND,
-                regen_rate=random.random() * (1/720 - 1/1440) + 1/1440,
-                burn_rate=random.random() * (1/6 - 1/12) + 1/12,
                 burnt = cells_burnt,
                 elevation=elev
             )
@@ -241,8 +225,6 @@ def setup(args, wind_direction):
             for y in range(0, 20):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
@@ -252,8 +234,6 @@ def setup(args, wind_direction):
             for y in range(20, 100):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
@@ -263,8 +243,6 @@ def setup(args, wind_direction):
             for y in range(0, 20):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
