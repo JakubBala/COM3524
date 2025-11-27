@@ -44,7 +44,8 @@ def transition_func(
     time_step,
     wind_distribution: Wind, 
     water_dropping_plan=None,
-    config=None
+    config=None,
+    regrowing: bool = False
 ):
     new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
@@ -67,6 +68,9 @@ def transition_func(
     ])
 
     drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
+
+    # determine if we're running the regrowth sim or not. TO-DO: different transition function for regrowth sim?
+    regrowing = getattr(config, "run_regrow", False)
 
     town_ignited = False
     for x in range(rows):
@@ -103,13 +107,13 @@ def transition_func(
                             new_cell.ignite()
                             if new_cell.type == TerrainType.TOWN:
                                 town_ignited = True
-                                if config is not None and not hasattr(config, "town_ignition_step"):
+                                if config is not None and getattr(config, "town_ignition_step", None) is None:
                                     config.town_ignition_step = time_step
                             break 
             
             if old_cell.burning:
                 new_cell.burn()
-            else:
+            elif regrowing:
                 new_cell.regenerate()
 
             new_grid[x, y] = new_cell
@@ -132,6 +136,12 @@ def setup(args, wind_direction):
     # config.grid_dims = (200,200)
 
     # ----------------------------------------------------------------------
+    
+    #If user chooses to run regrowth simulation, set all cells to burnt initially
+    if getattr(config, "run_regrow", False):
+        cells_burnt = True
+    else:
+        cells_burnt = False
 
     grid = np.empty((200,200), TerrainCell)
     for x in range(0,200):
@@ -139,31 +149,38 @@ def setup(args, wind_direction):
             grid[x,y] = TerrainCell(
                 TerrainType.CHAPARRAL,
                 regen_rate=random.random() * (1/2880 - 1/5760) + 1/5760,
-                burn_rate=random.random() * (1/24 - 1/168) + 1/168
+                burn_rate=random.random() * (1/24 - 1/168) + 1/168,
+                burnt = cells_burnt
             )
 
+    # small flick at the top(north) of forest
     for x in range(20,30):
         for y in range(20,80):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
                 regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                burnt = cells_burnt
             )
     
+    # tall trunk of forest
     for x in range(30,100):
         for y in range(20,50):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
                 regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                burnt = cells_burnt
             )
 
+    # large south block of forest
     for x in range(100,140):
         for y in range(20,100):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
                 regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                burnt = cells_burnt
             )
 
     for x in range(40,130):
@@ -171,7 +188,8 @@ def setup(args, wind_direction):
             grid[x,y] = TerrainCell(
                 TerrainType.CANYON_SCRUBLAND,
                 regen_rate=random.random() * (1/720 - 1/1440) + 1/1440,
-                burn_rate=random.random() * (1/6 - 1/12) + 1/12
+                burn_rate=random.random() * (1/6 - 1/12) + 1/12,
+                burnt = cells_burnt
             )
 
     for x in range(40,80):
@@ -193,23 +211,55 @@ def setup(args, wind_direction):
             )
     
     # add ignition sources if enabled
-    if getattr(config, "power_plant_enabled", False):
+    if getattr(config, "power_plant_enabled", False) and not cells_burnt:
         grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
-    if getattr(config, "incinerator_enabled", False):
+    if getattr(config, "incinerator_enabled", False) and not cells_burnt:
         grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
 
-    # add intervention 1 - extended forest (if enabled)
+    # add intervention 1 - extended forest left (if enabled)
     if getattr(config, "intervention_1_enabled", False):
         for x in range(100, 140):
             for y in range(0, 20):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
                     regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720
+                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                    burnt = cells_burnt
+                )
+
+    # add intervention 2 - extended forest down (if enabled)
+    if getattr(config, "intervention_2_enabled", False):
+        for x in range(140, 160):
+            for y in range(20, 100):
+                grid[x,y] = TerrainCell(
+                    TerrainType.DENSE_FOREST,
+                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
+                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                    burnt = cells_burnt
+                )
+
+    # if both forest interventions are enabled - make square
+    if getattr(config, "intervention_1_enabled", False) and getattr(config, "intervention_2_enabled", False):
+        for x in range(140, 160):
+            for y in range(0, 20):
+                grid[x,y] = TerrainCell(
+                    TerrainType.DENSE_FOREST,
+                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
+                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
+                    burnt = cells_burnt
+                )
+
+    # add intervention 3 - flood the canyon (if enabled)
+    if getattr(config, "intervention_3_enabled", False):
+        for x in range(40,130):
+            for y in range(140,150):
+                grid[x,y] = TerrainCell(
+                    TerrainType.LAKE
                 )
 
     config.initial_grid = grid
     config.dtype = TerrainCell
+    config.town_ignition_step = None
     
     config.state_index_function = cell_to_state_index
 
