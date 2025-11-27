@@ -14,42 +14,42 @@ class TerrainType(Enum):
 
 IGNITION_PROB_TABLE = {
     TerrainType.CHAPARRAL: {
-        TerrainType.CHAPARRAL: 0.45,
-        TerrainType.CANYON_SCRUBLAND: 0.5,
-        TerrainType.DENSE_FOREST: 0.25,
-        TerrainType.TOWN: 0.25,
+        TerrainType.CHAPARRAL: 0.50,
+        TerrainType.CANYON_SCRUBLAND: 0.75,
+        TerrainType.DENSE_FOREST: 0.30,
+        TerrainType.TOWN: 0.40,
         TerrainType.LAKE: 0.0,
         TerrainType.SOURCE: 0.35
     },
     TerrainType.CANYON_SCRUBLAND: {
-        TerrainType.CHAPARRAL: 0.45,
-        TerrainType.CANYON_SCRUBLAND: 0.5,
+        TerrainType.CHAPARRAL: 0.65,
+        TerrainType.CANYON_SCRUBLAND: 1,
         TerrainType.DENSE_FOREST: 0.25,
-        TerrainType.TOWN: 0.35,
+        TerrainType.TOWN: 0.45,
         TerrainType.LAKE: 0.0,
         TerrainType.SOURCE: 0.35
     },
     TerrainType.DENSE_FOREST: {
-        TerrainType.CHAPARRAL: 0.15,
-        TerrainType.CANYON_SCRUBLAND: 0.24,
-        TerrainType.DENSE_FOREST: 0.15,
-        TerrainType.TOWN: 0.20,
+        TerrainType.CHAPARRAL: 0.45,
+        TerrainType.CANYON_SCRUBLAND: 0.55,
+        TerrainType.DENSE_FOREST: 0.20,
+        TerrainType.TOWN: 0.30,
         TerrainType.LAKE: 0.0,
         TerrainType.SOURCE: 0.35
     },
     TerrainType.SOURCE: {
-        TerrainType.CHAPARRAL: 0.8,
-        TerrainType.CANYON_SCRUBLAND: 0.9,
-        TerrainType.DENSE_FOREST: 0.7,
+        TerrainType.CHAPARRAL: 0.90,
+        TerrainType.CANYON_SCRUBLAND: 0.95,
+        TerrainType.DENSE_FOREST: 0.80,
         TerrainType.TOWN: 0.95,
         TerrainType.LAKE: 0.0,
         TerrainType.SOURCE: 1.0
     },
     TerrainType.TOWN: {
-        TerrainType.CHAPARRAL: 0.2,
-        TerrainType.CANYON_SCRUBLAND: 0.2,
-        TerrainType.DENSE_FOREST: 0.2,
-        TerrainType.TOWN: 0.15,
+        TerrainType.CHAPARRAL: 0.40,
+        TerrainType.CANYON_SCRUBLAND: 0.45,
+        TerrainType.DENSE_FOREST: 0.35,
+        TerrainType.TOWN: 0.30,
         TerrainType.LAKE: 0.0,
         TerrainType.SOURCE: 0.35
     },

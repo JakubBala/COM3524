@@ -55,17 +55,6 @@ def transition_func(
         (-1,0),           (1,0),
         (-1,1),  (0,1),   (1,1)
     ]
-    
-    neighbour_geom_weights = np.array([
-        CORNER_W_N,
-        EDGE_W_N,
-        CORNER_W_N,
-        EDGE_W_N,
-        EDGE_W_N,
-        CORNER_W_N,
-        EDGE_W_N,
-        CORNER_W_N
-    ])
 
     drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
 
@@ -86,25 +75,23 @@ def transition_func(
             if not old_cell.burning and not old_cell.burnt:
                 for idx, ns_array in enumerate(neighbour_states):
                     neighbour = ns_array[x, y]
-                    # Always integral?
                     if neighbour is not None and not isinstance(neighbour, numbers.Integral) and neighbour.burning:
                         dx, dy = neighbour_offsets[idx]
-                        geom_w = neighbour_geom_weights[idx]
 
                         ignition_source = neighbour.type
                         ignition_prob = old_cell.get_ignition_prob(ignition_source)
-                        moisture_effect = math.exp(-0.014 * old_cell.moisture)
+
+                        moisture = old_cell.moisture
+                        moisture_effect = 1 - 2.59*moisture + 5.11*moisture**2 - 3.52*moisture**3
+                        moisture_effect = max(0.0, min(1.0, moisture_effect))
 
                         fire_dir = (math.degrees(math.atan2(dy, dx)) - 270 + 360) % 360
 
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
-
                         slope_effect = old_cell.get_slope_effect(neighbour.elevation)
-                        if(slope_effect != 1 and slope_effect != 0): print(slope_effect)
 
                         prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect * slope_effect
-                        prob *= geom_w
                         prob = max(0.0, min(prob, 1.0))
 
                         if random.random() < prob:
@@ -214,8 +201,6 @@ def setup(args, wind_direction):
             # ASCENDING section (depth → 0)
             t2 = (t - (desc_pct + flat_pct)) / asc_pct
             elev = canyon_depth + t2 * (0 - canyon_depth)
-
-        # print("setting elevation: ", elev)
 
         for y in range(140,150):
             grid[x,y] = TerrainCell(

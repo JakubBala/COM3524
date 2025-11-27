@@ -21,18 +21,21 @@ class Wind():
         return diff
     
     def fire_spread_contribution(self, fire_direction: int) -> float:
-        v = self.sample_wind_speed()
+        w = self.sample_wind_speed()
+        diff_deg = self._direction_difference(self.direction, fire_direction)
+        theta = math.radians(diff_deg)
 
-        diff = self._direction_difference(self.direction, fire_direction)
-        alignment = math.cos(math.radians(diff))
+        f = min(w / 30.0, 1.0)
 
-        speed_factor = (1+ 0.025 * v) ** 2.8
-        speed_factor = min(max(0.4, speed_factor), 2.0)
+        # Gaussian
+        sigma = 1.0 * (1 - f) + 0.3
+        y = 0.1 + 0.9 * math.exp(-(theta / sigma)**2)
 
-        probability = 1.0 + alignment * (speed_factor - 1.0)
+        # Scale
+        y *= 0.5 + 0.5 * f
 
-        return max(0.4, min(2.0, probability))
-
+        return y
+        
 def estimate_weibull_mle(wind_speeds, max_iter=100, tol=1e-6):
     n = len(wind_speeds)
     if n == 0:
