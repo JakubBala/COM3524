@@ -95,7 +95,11 @@ def transition_func(
 
                         wind_prob = wind_distribution.fire_spread_contribution(fire_dir)
 
-                        prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect
+
+                        slope_effect = old_cell.get_slope_effect(neighbour.elevation)
+                        if(slope_effect != 1 and slope_effect != 0): print(slope_effect)
+
+                        prob = (1 - (1 - ignition_prob) ** wind_prob) * moisture_effect * slope_effect
                         prob *= geom_w
                         prob = max(0.0, min(prob, 1.0))
 
@@ -166,12 +170,42 @@ def setup(args, wind_direction):
                 burn_rate=random.random() * (1/480 - 1/720) + 1/720
             )
 
+    # CANYON
+    canyon_x_start = 40
+    canyon_x_end   = 130
+    canyon_depth   = -100
+    length = canyon_x_end - canyon_x_start
+    desc_pct = 0.1   # % descent
+    asc_pct  = 0.1   # % ascent
+    flat_pct = 1 - desc_pct - asc_pct  # middle %
     for x in range(40,130):
+
+        # Normalised position across canyon (0.0 → 1.0)
+        t = (x - canyon_x_start) / length
+
+        # Compute elevation using piecewise function
+        elev = 0.0
+        if t < desc_pct:
+            # DESCENDING section (0 → depth)
+            elev = 0 + (t / desc_pct) * (canyon_depth - 0)
+
+        elif t < desc_pct + flat_pct:
+            # FLAT canyon floor
+            elev = canyon_depth
+
+        else:
+            # ASCENDING section (depth → 0)
+            t2 = (t - (desc_pct + flat_pct)) / asc_pct
+            elev = canyon_depth + t2 * (0 - canyon_depth)
+
+        # print("setting elevation: ", elev)
+
         for y in range(140,150):
             grid[x,y] = TerrainCell(
                 TerrainType.CANYON_SCRUBLAND,
                 regen_rate=random.random() * (1/720 - 1/1440) + 1/1440,
-                burn_rate=random.random() * (1/6 - 1/12) + 1/12
+                burn_rate=random.random() * (1/6 - 1/12) + 1/12,
+                elevation=elev
             )
 
     for x in range(40,80):

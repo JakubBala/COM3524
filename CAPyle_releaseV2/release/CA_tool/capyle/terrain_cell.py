@@ -2,6 +2,7 @@
 from enum import Enum
 import numbers
 import random
+import math
 
 class TerrainType(Enum):
     CHAPARRAL = 1
@@ -66,6 +67,7 @@ class TerrainCell():
     def __init__(
         self, 
         type: TerrainType, 
+        elevation: float = 0.0,
         moisture_decay: float = 0.05,
         burn_threshold: float = 0.5,
         regen_rate: float = None,
@@ -79,6 +81,7 @@ class TerrainCell():
         self.moisture_decay_rate = moisture_decay
         self.burn_threshold = burn_threshold
 
+        self.elevation = elevation
         self.fuel = 1.0
         self.moisture = 0.0
 
@@ -183,9 +186,25 @@ class TerrainCell():
         multiplier = 0.5 if not self.burning else 1
         self.moisture = max(0, self.moisture - multiplier * self.moisture_decay_rate)
 
+    # slope is just simplified to difference in height between cells.
+    def get_slope_effect(self, ignition_source_elevation: int) -> float:
+        slope = self.elevation - ignition_source_elevation
+        # any difference greater than 50 is instantly impossible
+        if(abs(slope) > 50): return 0
+        # majority slopes will be 0
+        if(abs(slope) == 0): return 1
+        # normalize to -0.5, 0.5 range
+        slope_norm = slope / 100.0
+        # print(slope_norm)
+        # apply function
+        effect_slope = 0.5 + (0.75 / (0.5 + math.exp(-12 * slope_norm)))
+        return effect_slope
+
+
     def copy(self):
         new_cell = TerrainCell(
             type=self.type,
+            elevation=self.elevation,
             moisture_decay=self.moisture_decay_rate,
             burn_threshold=self.burn_threshold,
             regen_rate=self.regen_rate,
