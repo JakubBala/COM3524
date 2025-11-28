@@ -75,8 +75,7 @@ def regrow_transition_func(
                 if 1 <= x < rows - 1 and 1 <= y < cols - 1:
 
                     for idx, ns_array in enumerate(neighbour_states):
-                        
-                        #onlly works when I do -1 is this safe?
+
                         neighbour = ns_array[x, y]
 
                         if neighbour is None:
@@ -97,12 +96,6 @@ def regrow_transition_func(
                             tc.TerrainType.DENSE_FOREST,
                             tc.TerrainType.CANYON_SCRUBLAND
                         ):
-                            continue
-                        
-                        # Prevent cross-spread between canyon scrubland and other vegetation
-                        if neighbour_type == tc.TerrainType.CANYON_SCRUBLAND and old_cell.type != tc.TerrainType.CANYON_SCRUBLAND:
-                            continue
-                        elif neighbour_type != tc.TerrainType.CANYON_SCRUBLAND and old_cell.type == tc.TerrainType.CANYON_SCRUBLAND:
                             continue
 
                         spread_prob = REGROWTH_RATE.get(neighbour_type, 0.0)
