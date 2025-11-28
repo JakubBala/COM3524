@@ -31,6 +31,7 @@ import CA_tool.capyle.utils as utils
 import numpy as np
 from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
 from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
+from CAPyle_releaseV2.release.CA_tool.capyle.regrow import regrow_transition_func, REGROWTH_RATE
 
 EDGE_W = 0.785398
 CORNER_W = 0.214601
@@ -44,8 +45,7 @@ def transition_func(
     time_step,
     wind_distribution: Wind, 
     water_dropping_plan=None,
-    config=None,
-    regrowing: bool = False
+    config=None
 ):
     new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
@@ -57,9 +57,6 @@ def transition_func(
     ]
 
     drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
-
-    # determine if we're running the regrowth sim or not. TO-DO: different transition function for regrowth sim?
-    regrowing = getattr(config, "run_regrow", False)
 
     town_ignited = False
     for x in range(rows):
@@ -104,8 +101,6 @@ def transition_func(
             
             if old_cell.burning:
                 new_cell.burn()
-            elif regrowing:
-                new_cell.regenerate()
 
             new_grid[x, y] = new_cell
 
@@ -118,14 +113,12 @@ def setup(args, wind_direction, num_generations = None, start = None):
     config.title = "Real Fire"
     config.dimensions = 2
     config.states = (1,2,3,4,5,6)
+    
     # ------------------------------------------------------------------------
-
     # ---- Override the defaults below (these may be changed at anytime) ----
-
     # config.state_colors = [(0,0,0),(1,1,1)]
     # config.num_generations = 150
     # config.grid_dims = (200,200)
-
     # ----------------------------------------------------------------------
     
     #If user chooses to run regrowth simulation, set all cells to burnt initially
@@ -139,8 +132,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
         for y in range(0,200):
             grid[x,y] = TerrainCell(
                 TerrainType.CHAPARRAL,
-                regen_rate=random.random() * (1/2880 - 1/5760) + 1/5760,
-                burn_rate=random.random() * (1/24 - 1/168) + 1/168,
                 burnt = cells_burnt
             )
 
@@ -149,8 +140,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
         for y in range(20,80):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
     
@@ -159,8 +148,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
         for y in range(20,50):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
 
@@ -169,8 +156,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
         for y in range(20,100):
             grid[x,y] = TerrainCell(
                 TerrainType.DENSE_FOREST,
-                regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                 burnt = cells_burnt
             )
 
@@ -205,8 +190,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
         for y in range(140,150):
             grid[x,y] = TerrainCell(
                 TerrainType.CANYON_SCRUBLAND,
-                regen_rate=random.random() * (1/720 - 1/1440) + 1/1440,
-                burn_rate=random.random() * (1/6 - 1/12) + 1/12,
                 burnt = cells_burnt,
                 elevation=elev
             )
@@ -241,8 +224,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
             for y in range(0, 20):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
@@ -252,8 +233,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
             for y in range(20, 100):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
@@ -263,8 +242,6 @@ def setup(args, wind_direction, num_generations = None, start = None):
             for y in range(0, 20):
                 grid[x,y] = TerrainCell(
                     TerrainType.DENSE_FOREST,
-                    regen_rate=random.random() * (1/8640 - 1/12960) + 1/12960,
-                    burn_rate=random.random() * (1/480 - 1/720) + 1/720,
                     burnt = cells_burnt
                 )
 
@@ -338,16 +315,24 @@ def main(
         with open(water_plan_path, "r") as f:
             water_dropping_plan = json.load(f)
 
-    # Create grid object
-    grid = Grid2D(
-        config, 
-        partial(
-            transition_func, 
-            wind_distribution=wind, 
-            water_dropping_plan=water_dropping_plan,
-            config=config
+    # Choose which transition function to use based on whether regrowth is enabled.
+    if getattr(config, "run_regrow", False):
+        grid = Grid2D(
+            config, 
+            partial(
+                regrow_transition_func 
+            )
         )
-    )
+    else:
+        grid = Grid2D(
+            config, 
+            partial(
+                transition_func, 
+                wind_distribution=wind, 
+                water_dropping_plan=water_dropping_plan,
+                config=config
+            )
+        )
 
     # Run the CA, save grid state every generation to timeline
     timeline, time_step = grid.run()
