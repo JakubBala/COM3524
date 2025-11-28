@@ -26,36 +26,19 @@ def get_results(
     water_dropping_plan = None, 
     timeline_path="timeline",
     num_iterations = 100,
+    start = "POWER_PLANT",
     config_path="CAPyle_releaseV2/release/CA_tool/temp/config.pkl"
 ):
-    """
-    Run the fire simulation and compute:
-      1) The iteration/time when fire first reaches a town.
-      2) The fire coverage (fraction of burning cells) at that time.
-    """
-
     args = [config_path]
-    config = setup(args, direction, num_iterations)
+    config = setup(args, direction, num_iterations, start)
     wind = Wind(wind_speed, direction, k, c)
     grid = Grid2D(config, partial(transition_func, wind_distribution=wind, water_dropping_plan=water_dropping_plan))
 
     timeline, time_step = grid.run()
     utils.save(timeline, config.timeline_path)
 
-    coverage_at_time = 0.0
-
-    grid_state = timeline[-1]
-    total_cells = grid_state.size
-    burning_cells = np.sum(grid_state % 2 == 1)  # all odd numbers are "burning"
-    town_cells = (grid_state == 10) | (grid_state == 11)
-
-    if np.any(grid_state[town_cells] == 11):
-        time_fire_reaches_town = time_step
-        coverage_at_time = burning_cells / total_cells
-
-    return time_fire_reaches_town, coverage_at_time
+    return time_step
 
 if __name__ == "__main__":
-    t, c = get_results(num_iterations=300)
+    t = get_results(num_iterations=300)
     print(f"Time: {t}")
-    print(f"Coverage: {c}")

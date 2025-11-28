@@ -111,7 +111,7 @@ def transition_func(
 
     return new_grid, town_ignited
 
-def setup(args, wind_direction):
+def setup(args, wind_direction, num_generations = None, start = None):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
@@ -230,7 +230,7 @@ def setup(args, wind_direction):
             )
     
     # add ignition sources if enabled
-    if getattr(config, "power_plant_enabled", False) and not cells_burnt:
+    if (getattr(config, "power_plant_enabled", False) or start == "POWER_PLANT") and not cells_burnt:
         grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
     if getattr(config, "incinerator_enabled", False) and not cells_burnt:
         grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
@@ -310,7 +310,8 @@ def setup(args, wind_direction):
     config.state_colors = state_colors
 
     config.wrap = False
-    # config.num_generations = num_iterations
+    if num_generations:
+        config.num_generations = num_generations
     config.timeline_path = f"wd_{wind_direction}_timeline"
 
     if len(args) == 2:

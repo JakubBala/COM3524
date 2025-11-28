@@ -164,7 +164,7 @@ class TerrainCell():
 
             self._strip_moisture()
     
-    def drop_water(self, max_moisture: float = 0.5):
+    def drop_water(self, max_moisture: float = 1):
         self.waterdropped = True
         if self.burnt:
             return # water drop has no effect on burnt cells
@@ -183,7 +183,7 @@ class TerrainCell():
                     self.moisture = max_moisture
             
     def _strip_moisture(self):
-        multiplier = 0.5 if not self.burning else 1
+        multiplier = 0.25 if not self.burning else 1
         self.moisture = max(0, self.moisture - multiplier * self.moisture_decay_rate)
 
     # slope is just simplified to difference in height between cells.
