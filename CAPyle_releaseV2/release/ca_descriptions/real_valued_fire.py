@@ -31,6 +31,7 @@ import CA_tool.capyle.utils as utils
 import numpy as np
 from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainCell, TerrainType, cell_to_state_index
 from CAPyle_releaseV2.release.CA_tool.capyle.wind import Wind
+from CAPyle_releaseV2.release.CA_tool.capyle.regrow import regrow_transition_func, REGROWTH_RATE
 
 EDGE_W = 0.785398
 CORNER_W = 0.214601
@@ -44,7 +45,7 @@ def transition_func(
     time_step,
     wind_distribution: Wind, 
     water_dropping_plan=None,
-    config=None,
+    config=None
 ):
     new_grid = np.empty_like(grid)    
     rows, cols = grid.shape
@@ -315,16 +316,24 @@ def main(
         with open(water_plan_path, "r") as f:
             water_dropping_plan = json.load(f)
 
-    # Create grid object
-    grid = Grid2D(
-        config, 
-        partial(
-            transition_func, 
-            wind_distribution=wind, 
-            water_dropping_plan=water_dropping_plan,
-            config=config
+    # Choose which transition function to use based on whether regrowth is enabled.
+    if getattr(config, "run_regrow", False):
+        grid = Grid2D(
+            config, 
+            partial(
+                regrow_transition_func 
+            )
         )
-    )
+    else:
+        grid = Grid2D(
+            config, 
+            partial(
+                transition_func, 
+                wind_distribution=wind, 
+                water_dropping_plan=water_dropping_plan,
+                config=config
+            )
+        )
 
     # Run the CA, save grid state every generation to timeline
     timeline, time_step = grid.run()

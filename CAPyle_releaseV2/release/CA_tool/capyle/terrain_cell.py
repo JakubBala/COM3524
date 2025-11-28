@@ -110,14 +110,6 @@ class TerrainCell():
     def get_ignition_prob(self, ignition_source: TerrainType) -> float:
         return IGNITION_PROB_TABLE[ignition_source][self.type]
 
-    def regenerate(self):
-        if self.type != TerrainType.TOWN and \
-            self.type != TerrainType.LAKE and \
-            self.type != TerrainType.SOURCE:
-            if not self.burning:
-                self.fuel = min(1.0, self.fuel + (self.regen_rate if self.regen_rate is not None else 0))
-            self._strip_moisture()
-
     def ignite(self):
         if self.burnt:
             return
