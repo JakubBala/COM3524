@@ -56,7 +56,8 @@ def transition_func(
         (-1,1),  (0,1),   (1,1)
     ]
 
-    drops = set(tuple(coord) for coord in water_dropping_plan.get(str(time_step), []))
+    _plan = water_dropping_plan if isinstance(water_dropping_plan, dict) else {}
+    drops = set(tuple(coord) for coord in _plan.get(str(time_step), []))
 
     town_ignited = False
     for x in range(rows):
