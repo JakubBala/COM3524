@@ -40,15 +40,20 @@ def mutation(individual, grid_size=200, mutation_rate=0.1):
 
 def sp_crossover(parent1, parent2):
     child = {}
-    timesteps = list(parent1.keys())
-    crossover_point = random.randint(1, len(timesteps)-1)
+    all_timesteps = sorted(set(parent1.keys()) | set(parent2.keys()), key=int)
+    crossover_point = random.randint(1, len(all_timesteps)-1)
 
-    for i, t in enumerate(timesteps):
+    for i, t in enumerate(all_timesteps):
         if i < crossover_point:
-            child[t] = [drop.copy() for drop in parent1[t]]
+            if t in parent1:
+                child[t] = [drop.copy() for drop in parent1[t]]
+            else:
+                child[t] = [drop.copy() for drop in parent2[t]]
         else:
-            child[t] = [drop.copy() for drop in parent2[t]]
-
+            if t in parent2:
+                child[t] = [drop.copy() for drop in parent2[t]]
+            else:
+                child[t] = [drop.copy() for drop in parent1[t]]
     return child
 
 def uniform_crossover(parent1, parent2):
@@ -59,7 +64,7 @@ def uniform_crossover(parent1, parent2):
 
 
 def eval_fitness(individual, num_iterations=500):
-    time, _ = get_results(
+    time = get_results(
         num_iterations=num_iterations,
         water_dropping_plan=individual
     )
@@ -81,8 +86,29 @@ def tourny_selection(population, fitness_scores, k=3):
         selected.append(winner)
     return selected
 
+def load_population(path):
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    cleaned = []
+    for idx, individual in enumerate(data):
+        indiv_clean = {str(t): drops for t, drops in individual.items()}
+        cleaned.append(indiv_clean)
+
+        timestep_counts = {t: len(drops) for t, drops in indiv_clean.items()}
+        total_drops = sum(timestep_counts.values())
+
+        print(f"Plan {idx+1}:")
+        print(f"  Timesteps: {len(indiv_clean)}")
+        print(f"  Drops per timestep: {timestep_counts}")
+        print(f"  Total drops: {total_drops}")
+        print("-" * 40)
+
+    print(f"Total plans loaded: {len(cleaned)}")
+    return cleaned
+
 if __name__ == "__main__":
-    population = create_population(pop_size=20, grid_size=200)
+    population = load_population("population.json")
     num_generations = 50
 
     for gen in range(num_generations):
@@ -110,5 +136,5 @@ if __name__ == "__main__":
 
     print("Best plan:", best_plan)
 
-    with open("population.json", "w") as f:
+    with open("/src/output/population_1.json", "w") as f:
         json.dump(population, f, indent=2)

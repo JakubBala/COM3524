@@ -216,7 +216,7 @@ def setup(args, wind_direction, num_generations = None, start = None):
     # add ignition sources if enabled
     if (getattr(config, "power_plant_enabled", False) or start == "POWER_PLANT") and not cells_burnt:
         grid[0,20] = TerrainCell(TerrainType.SOURCE, burning=True)
-    if getattr(config, "incinerator_enabled", False) and not cells_burnt:
+    if (getattr(config, "incinerator_enabled", False) or start == "INCINERATOR") and not cells_burnt:
         grid[0,199] = TerrainCell(TerrainType.SOURCE, burning=True)
 
     # add intervention 1 - extended forest left (if enabled)
@@ -346,4 +346,4 @@ def main(
 
 
 if __name__ == "__main__":
-    main(water_plan_path=water_json_path)
+    main()
