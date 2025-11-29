@@ -131,8 +131,6 @@ class TerrainCell():
                         self.burn_duration = 0
                     else:
                         self.fuel = 0.0
-        
-                self._strip_moisture()
 
     def burn(self):
         if self.type == TerrainType.TOWN:
@@ -153,8 +151,6 @@ class TerrainCell():
                 self.burnt = True
                 self.burnt_timer = 0
                 self.burn_duration = 0
-
-            self._strip_moisture()
     
     def drop_water(self, max_moisture: float = 1):
         self.waterdropped = True

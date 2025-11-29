@@ -22,7 +22,7 @@ import json
 import CA_tool.capyle as capyle_module
 water_json_path = os.path.join(
     os.path.dirname(capyle_module.__file__),
-    "waterdrops.json"
+    "waterdrops_tactical.json"
 )
 
 from matplotlib import colors
@@ -102,6 +102,8 @@ def transition_func(
             
             if old_cell.burning:
                 new_cell.burn()
+
+            new_cell._strip_moisture()
 
             new_grid[x, y] = new_cell
 
@@ -314,7 +316,13 @@ def main(
     
     if water_plan_path is not None and water_dropping_plan is None:
         with open(water_plan_path, "r") as f:
-            water_dropping_plan = json.load(f)
+            raw_plan = json.load(f)
+        # expand into full cell-level drop schedule
+        water_dropping_plan, total_drop_cells = expand_water_plan(raw_plan, rows=200, cols=200)
+
+        print("Water Drops: ", total_drop_cells)
+        if(total_drop_cells > 200):
+            print("Water Dropping Plan: Too much drops by: ", 200 - total_drop_cells, " cells")
 
     # Choose which transition function to use based on whether regrowth is enabled.
     if getattr(config, "run_regrow", False):
@@ -343,6 +351,78 @@ def main(
     config.save()
     # save timeline to file
     utils.save(timeline, config.timeline_path)
+
+
+def expand_water_plan(raw_plan, rows, cols):
+    """
+    Convert the user's start/end coordinate format into:
+    final_plan[timestep] = [(x,y), (x,y), ...]
+    """
+    final = {}
+    total_cells = 0
+
+    for t_str, coords in raw_plan.items():
+        if coords is None or len(coords) != 2:
+            continue
+
+        (x1, y1), (x2, y2) = coords
+
+        # Clamp to grid
+        x1 = max(0, min(rows-1, int(x1)))
+        y1 = max(0, min(cols-1, int(y1)))
+        x2 = max(0, min(rows-1, int(x2)))
+        y2 = max(0, min(cols-1, int(y2)))
+
+        line = bresenham_line(x1, y1, x2, y2)
+
+        final[t_str] = line
+        total_cells += len(line)
+
+    return final, total_cells
+
+def bresenham_line(x1, y1, x2, y2):
+    """Return list of grid cells along the line from (x1,y1) to (x2,y2).
+       If the line is diagonal, create a 2-cell-wide connected strip.
+    """
+    base = []
+
+    dx = abs(x2 - x1)
+    dy = -abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+    err = dx + dy
+
+    x, y = x1, y1
+    last_x, last_y = x, y  # track last point
+
+    while True:
+        base.append((x, y))
+
+        if x == x2 and y == y2:
+            break
+
+        last_x, last_y = x, y
+        e2 = 2 * err
+
+        step_x = False
+        step_y = False
+
+        if e2 >= dy:
+            err += dy
+            x += sx
+            step_x = True
+
+        if e2 <= dx:
+            err += dx
+            y += sy
+            step_y = True
+
+        # If this step was diagonal → add orthogonal cell to make 2-cell-thick continuous strip
+        if step_x and step_y:
+            # Add cell staying aligned with previous x change
+            base.append((x, last_y))
+
+    return base
 
 
 if __name__ == "__main__":
