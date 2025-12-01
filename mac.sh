@@ -1,20 +1,24 @@
 #!/bin/sh
 
-#  com3524.sh
-xhost +127.0.0.1
+IMAGE_NAME=com3524
+CONTAINER_NAME=forest-fire-team13
 
-# 2. Build the image (rebuild every time if needed)
-docker build -t com3524 .
+# 1. Start XQuartz access for Docker
+xhost +localhost
 
-# 3. Run your app with display forwarding
-docker run -it \
-    -p 5001:5000 \
+# 2. Remove old container
+docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1
+
+# 3. Build image
+docker build -t "$IMAGE_NAME" .
+
+# 4. Run container with mounts
+docker run -it --rm \
+    --name "$CONTAINER_NAME" \
     -e DISPLAY=host.docker.internal:0 \
-    -v "$(pwd)":/src \
-    --name com3524 \
-    --hostname com3524 \
-    com3524 \
-    bash
-#
-#  Created by Ayesha Sana on 21/08/2025.
-#  
+    -e PYTHONPATH=/src \
+    -p 5000:5000 \
+    -v "$(pwd)/CAPyle_releaseV2":/src/CAPyle_releaseV2 \
+    -v "$(pwd)/run_tool.py":/src/run_tool.py \
+    "$IMAGE_NAME" \
+    python3 -m run_tool
