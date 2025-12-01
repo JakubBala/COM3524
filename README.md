@@ -56,7 +56,7 @@ line 429 to drop chosen water plan (do not edit):
     main(water_plan_path=water_json_path)
 ```
 
-
+Close the GUI and re-run by selecting option 1 from the terminal again to apply these changes.
 
 ### Using the GUI
 
