@@ -22,7 +22,7 @@ import json
 import CA_tool.capyle as capyle_module
 water_json_path = os.path.join(
     os.path.dirname(capyle_module.__file__),
-    "waterdrops_incinerator.json"
+    "waterdrops_powplant.json"
 )
 
 from matplotlib import colors
@@ -426,4 +426,4 @@ def bresenham_line(x1, y1, x2, y2):
 
 
 if __name__ == "__main__":
-    main()
+    main(water_plan_path=water_json_path)
