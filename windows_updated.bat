@@ -25,8 +25,6 @@ docker run -it --rm ^
     -p 5000:5000 ^
     -v "%cd%\CAPyle_releaseV2":/src/CAPyle_releaseV2 ^
     -v "%cd%\run_tool.py":/src/run_tool.py ^
-    -v "%cd%\test_tool.py":/src/test_tool.py ^
-    -v "%cd%\water_dropping_ea.py":/src/water_dropping_ea.py ^
     %IMAGE_NAME% ^
     python3 -m run_tool
 
