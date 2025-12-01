@@ -426,4 +426,4 @@ def bresenham_line(x1, y1, x2, y2):
 
 
 if __name__ == "__main__":
-    main(water_plan_path=water_json_path)
+    main()

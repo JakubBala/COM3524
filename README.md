@@ -31,20 +31,32 @@ Note that unfortunately we have only been able to verify this works on Windows a
 
 ### Changing the Water Dropping Plan
 
-Depending on whether you are running from the power plant or incinerator, you can change the path on line 25 on `real_valued_fire.py`. For the powerplant:
+By default, the simulation runs without a water droping plan. Unfortunately we did not have time to add this as a toggle in the GUI, so to run a water dropping plan users will have to apply the following simple changes to the code:
+
+Select water dropping plan for the power plant or incinerator by updating `CAPyle_releaseV2/release/ca_descriptions/real_valued_fire.pyreal_valued_fire.py` line 25.  
+Line 25 for the powerplant water plan:
 ```python
     "waterdrops_powplant.json"
 ```
 
-For the incinerator:
+line 25 for the incinerator water plan:
 ```python
     "waterdrops_incinerator.json"
 ```
 
-Alternatively, run without a water dropping plan by removing `water_plan_path` on line 429:
+by default, the chosen water plan (see above) is not dropped. Update CAPyle_releaseV2/release/ca_descriptions/real_valued_fire.py line 429 to pass the chosen water dropping plan as a parameter:
+
+line 429 to not drop any water (default): 
 ```python
     main()
 ```
+
+line 429 to drop chosen water plan (do not edit): 
+```python
+    main(water_plan_path=water_json_path)
+```
+
+
 
 ### Using the GUI
 
