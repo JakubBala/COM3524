@@ -45,3 +45,25 @@ Alternatively, run without a water dropping plan by removing `water_plan_path` o
 ```python
     main()
 ```
+
+### Using the GUI
+
+Inside the tool's GUI, toggles are available for:
+
+#### Ignition Sources:
+[] Power Plant  
+[] Incinerator  
+#### Long Term Interventions:
+[] Extended Forest (West)  
+[] Extended Forest (South)  
+[] Flooded Canyon  
+#### Run Regrowth Simulation:
+[] Run Regrowth
+
+Any combination of the toggles can be selected. That is, multiple, one, or no sources can be chosen. Multiple, one, or no interventions can be applied.
+
+Running the regrowth simulation will not override the chosen interventions, but will override the ignition source toggles, as no ignition should happen in the regrowth simulation.
+
+There is also a label for number of generations. Your chosen number of generations can be manually inputted.
+
+### Once you have configured your options, click the 'Apply Configuration & Run CA' button at the bottom of the window to apply changes.

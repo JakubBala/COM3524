@@ -74,7 +74,7 @@ class _ConfigFrame(tk.Frame):
         self.intervention2_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_2_enabled", False))
         self.intervention3_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_3_enabled", False))
         interv_frame = tk.Frame(self)
-        interv_label = tk.Label(interv_frame, text="Interventions:")
+        interv_label = tk.Label(interv_frame, text="Long Term Interventions:")
         interv_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
 
         interv_cb_frame = tk.Frame(interv_frame)
