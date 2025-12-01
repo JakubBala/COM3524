@@ -47,7 +47,7 @@ Inside the tool's GUI, toggles are available for:
 
 Any combination of the 'Ignition Sources' and 'Long Term Interventions' toggles can be selected. That is, multiple, one, or no sources can be chosen. Multiple, one, or no interventions can be applied.
 
-Only one or neither 'Short term intervention' toggles should be selected at a time. If you select both, the Powe Plant plan will be applied.
+Only one or neither 'Short term intervention' toggles should be selected at a time. If you select both, the Power Plant plan will be applied.
 
 Running the regrowth simulation will not override the long term interventions, but will override the ignition source and short term interventions, as no ignition or water dropping should happen in the regrowth simulation.
 
