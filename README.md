@@ -22,7 +22,9 @@ The tool runs much like before. Make sure docker and the X11 server (if necessar
 ./mac.sh
 ```
 
-The tool should run automatically, then select the Team 13 CAPyle tool by entering "1".
+The tool should run automatically, then select the Team 13 CAPyle tool from available options by entering "1".
+
+Note that unfortunately we have only been able to verify this works on Windows as we do not have access to a linux or mac pc. Changes have been reflected in the linux and mac helper scripts anyway (untested).
 
 ## Features
 
