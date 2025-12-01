@@ -31,7 +31,7 @@ Note that unfortunately we have only been able to verify this works on Windows a
 
 ### Changing the Water Dropping Plan
 
-By default, the simulation runs without a water droping plan. Unfortunately we did not have time to add this as a toggle in the GUI, so to run a water dropping plan users will have to apply the following simple changes to the code:
+By default, the simulation runs without a water droping plan. Unfortunately we did not have time to add water plans as a toggle in the GUI, so to run a water dropping plan users will have to apply the following simple changes to the code:
 
 Select water dropping plan for the power plant or incinerator by updating `CAPyle_releaseV2/release/ca_descriptions/real_valued_fire.pyreal_valued_fire.py` line 25.  
 Line 25 for the powerplant water plan:
