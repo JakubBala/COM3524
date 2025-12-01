@@ -22,7 +22,7 @@ import json
 import CA_tool.capyle as capyle_module
 water_json_path = os.path.join(
     os.path.dirname(capyle_module.__file__),
-    "waterdrops_tactical.json"
+    "waterdrops_incinerator.json"
 )
 
 from matplotlib import colors
