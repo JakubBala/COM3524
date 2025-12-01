@@ -69,6 +69,26 @@ class _ConfigFrame(tk.Frame):
 
         self.separator()
 
+        self.plan1_var = tk.BooleanVar(value=getattr(self.ca_config, "waterplan1_enabled", False))
+        self.plan2_var = tk.BooleanVar(value=getattr(self.ca_config, "waterplan2_enabled", False))
+        plan_frame = tk.Frame(self)
+        plan_label = tk.Label(plan_frame, text="Short Term Interventions:")
+        plan_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
+
+        plan_cb_frame = tk.Frame(plan_frame)
+        cb_plan1 = tk.Checkbutton(plan_frame, text="1. Power Plant water plan", variable=self.plan1_var,
+                                     command=self._on_waterplan_changed)
+        cb_plan1.pack(anchor=tk.W, padx=4)
+
+        cb_plan2 = tk.Checkbutton(plan_frame, text="2. Incinerator water plan", variable=self.plan2_var,
+                                     command=self._on_waterplan_changed)
+        cb_plan2.pack(anchor=tk.W, padx=4)
+
+        plan_cb_frame.pack(anchor=tk.W)
+        plan_frame.pack(fill=tk.BOTH, pady=(6,0))
+
+        self.separator()
+
         # Interventions checkbox
         self.intervention1_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_1_enabled", False))
         self.intervention2_var = tk.BooleanVar(value=getattr(self.ca_config, "intervention_2_enabled", False))
@@ -147,6 +167,10 @@ class _ConfigFrame(tk.Frame):
         self.ca_config.intervention_2_enabled = bool(self.intervention2_var.get())
         self.ca_config.intervention_3_enabled = bool(self.intervention3_var.get())
 
+    def _on_waterplan_changed(self):
+        self.ca_config.waterplan1_enabled = bool(self.plan1_var.get())
+        self.ca_config.waterplan2_enabled = bool(self.plan2_var.get())
+
     def _on_regrow_changed(self):
         self.ca_config.run_regrow = bool(self.run_regrow.get())
 
@@ -165,6 +189,8 @@ class _ConfigFrame(tk.Frame):
         ca_config.num_generations = self.generations_entry.get_value()
         ca_config.power_plant_enabled = bool(self.powerplant_var.get())
         ca_config.incinerator_enabled = bool(self.incinerator_var.get())
+        ca_config.waterplan1_enabled = bool(self.plan1_var.get())
+        ca_config.waterplan2_enabled = bool(self.plan2_var.get())
         ca_config.intervention_1_enabled = bool(self.intervention1_var.get())
         ca_config.intervention_2_enabled = bool(self.intervention2_var.get())
         ca_config.intervention_3_enabled = bool(self.intervention3_var.get())
@@ -248,6 +274,8 @@ class _ConfigFrame(tk.Frame):
         # sync ignition source checkboxes
         self.powerplant_var.set(bool(getattr(self.ca_config, "power_plant_enabled", False)))
         self.incinerator_var.set(bool(getattr(self.ca_config, "incinerator_enabled", False)))
+        self.plan1_var.set(bool(getattr(self.ca_config, "waterplan1_enabled", False)))
+        self.plan2_var.set(bool(getattr(self.ca_config, "waterplan2_enabled", False)))
         self.intervention1_var.set(bool(getattr(self.ca_config, "intervention_1_enabled", False)))
         self.intervention2_var.set(bool(getattr(self.ca_config, "intervention_2_enabled", False)))
         self.intervention3_var.set(bool(getattr(self.ca_config, "intervention_3_enabled", False)))

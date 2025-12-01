@@ -20,10 +20,6 @@ sys.path.append(main_dir_loc + 'capyle/guicomponents')
 import os
 import json
 import CA_tool.capyle as capyle_module
-water_json_path = os.path.join(
-    os.path.dirname(capyle_module.__file__),
-    "waterdrops_powplant.json"
-)
 
 from matplotlib import colors
 from CA_tool.capyle.ca import Grid2D
@@ -426,4 +422,24 @@ def bresenham_line(x1, y1, x2, y2):
 
 
 if __name__ == "__main__":
-    main()
+    config = setup(sys.argv[1:], 0)
+
+    if getattr(config, "waterplan1_enabled", True):
+        water_json_path = os.path.join(
+        os.path.dirname(capyle_module.__file__),
+        "waterdrops_powplant.json"
+    )
+    elif getattr(config, "waterplan2_enabled", True):
+        water_json_path = os.path.join(
+        os.path.dirname(capyle_module.__file__),
+        "waterdrops_incinerator.json"
+    )
+    else:
+        water_json_path = None
+    
+    print ("Water Plan Path: ", water_json_path)
+    
+    if water_json_path is not None:
+        main(water_plan_path=water_json_path)
+    else:
+        main()
