@@ -35,56 +35,10 @@ class Wind():
         y *= 0.5 + 0.5 * f
 
         return y
-        
-def estimate_weibull_mle(wind_speeds, max_iter=100, tol=1e-6):
-    n = len(wind_speeds)
-    if n == 0:
-        raise ValueError("wind_speeds list cannot be empty")
-
-    ln_v = [math.log(v) for v in wind_speeds]
-    mean_v = sum(wind_speeds) / n
-    std_v = math.sqrt(sum((v - mean_v) ** 2 for v in wind_speeds) / n)
-
-    if std_v == 0:
-        return float("inf"), mean_v
-    k = max((std_v / mean_v) ** -1.086, 0.1)
-
-    # Basic Newton-Raphson method
-    for _ in range(max_iter):
-        v_k = [v ** k for v in wind_speeds]
-        sum_vk = sum(v_k)
-        if sum_vk == 0:
-            break
-
-        v_k_ln = [v ** k * math.log(v) for v in wind_speeds]
-        f = (sum(v_k_ln) / sum_vk) - (sum(ln_v) / n) - (1 / k)
-        sum_vk_ln2 = sum(v ** k * (math.log(v) ** 2) for v in wind_speeds)
-        f_prime = (sum(v_k_ln) / sum_vk) ** 2 - (sum_vk_ln2 / sum_vk) + (1 / (k ** 2))
-
-        if f_prime == 0:
-            break
-
-        step = f / f_prime
-        step = max(min(step, 1.0), -1.0)
-
-        k_new = k - step
-        if not math.isfinite(k_new) or k_new <= 0:
-            break
-
-        if abs(k_new - k) < tol:
-            k = k_new
-            break
-
-        k = k_new
-
-    k = max(min(k, 100.0), 0.1)
-    c = (sum(v ** k for v in wind_speeds) / n) ** (1 / k)
-
-    return k, c
 
 if __name__ == "__main__":
     speeds = [13.5, 13.9, 15.5, 15.5, 14.6, 14, 13.1, 12.5, 13.5, 13.5, 13.7, 13.4, 13.9]
-    k, c = estimate_weibull_mle(speeds)
+    k, c = 37.284, 14.778
 
     print(f"Weibull K: {k:.3f}")
     print(f"Weibull C: {c:.3f}")

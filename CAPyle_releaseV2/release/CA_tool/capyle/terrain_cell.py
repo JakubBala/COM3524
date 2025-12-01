@@ -63,6 +63,7 @@ IGNITION_PROB_TABLE = {
     },
 }
 
+# Randomised burn and regen rates based on assignment brief
 REGEN_RATE_TABLE = {
     TerrainType.CHAPARRAL:random.random() * (1/2880 - 1/5760) + 1/5760,
     TerrainType.CANYON_SCRUBLAND:random.random() * (1/720 - 1/1440) + 1/1440,
@@ -210,6 +211,7 @@ class TerrainCell():
         return new_cell
 
 def cell_to_state_index(cell: TerrainCell) -> int:
+    # Used to map cells to integer states so they can be visualised
     if cell is None or isinstance(cell, numbers.Integral):
         return -1 
 
