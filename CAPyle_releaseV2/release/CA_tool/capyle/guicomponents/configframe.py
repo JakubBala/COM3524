@@ -78,15 +78,15 @@ class _ConfigFrame(tk.Frame):
         interv_label.pack(anchor=tk.W, padx=0, pady=(0, 4))
 
         interv_cb_frame = tk.Frame(interv_frame)
-        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="1. Left-Extended Forest", variable=self.intervention1_var,
+        cb_interv1 = tk.Checkbutton(interv_cb_frame, text="1. Extended Forest (West)", variable=self.intervention1_var,
                                      command=self._on_intervention_changed)
         cb_interv1.pack(anchor=tk.W, padx=4)
 
-        cb_interv2 = tk.Checkbutton(interv_cb_frame, text="2. Down-Extended Forest", variable=self.intervention2_var,
+        cb_interv2 = tk.Checkbutton(interv_cb_frame, text="2. Extended Forest (South)", variable=self.intervention2_var,
                                      command=self._on_intervention_changed)
         cb_interv2.pack(anchor=tk.W, padx=4)
 
-        cb_interv3 = tk.Checkbutton(interv_cb_frame, text="3. Flood Canyon", variable=self.intervention3_var,
+        cb_interv3 = tk.Checkbutton(interv_cb_frame, text="3. Flooded Canyon", variable=self.intervention3_var,
                                      command=self._on_intervention_changed)
         cb_interv3.pack(anchor=tk.W, padx=4)
 

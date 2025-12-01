@@ -1,9 +1,6 @@
 
 from functools import partial
-import inspect
 import sys
-
-import numpy as np
 
 sys.path.append("/src")
 sys.path.append("/src/CA_tool")
@@ -12,7 +9,6 @@ sys.path.append("/src/CAPyle_releaseV2/release/CA_tool/capyle")
 sys.path.append("/src/CAPyle_releaseV2/release/CA_tool/capyle/guicomponents")
 sys.path.append("/src/CAPyle_releaseV2/release/CA_tool/capyle/ca")
 
-from CAPyle_releaseV2.release.CA_tool.capyle.terrain_cell import TerrainType
 from CAPyle_releaseV2.release.ca_descriptions.real_valued_fire import setup, transition_func
 from CAPyle_releaseV2.release.CA_tool.capyle import utils
 from CAPyle_releaseV2.release.CA_tool.capyle.ca.grid2d import Grid2D
